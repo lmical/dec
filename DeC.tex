@@ -783,9 +783,46 @@ The control volume $V$, as well as the spatial domain $\Omega$, can either be fi
 \begin{observation}
 So far the spatial domain $\Omega$ can also be unbounded. Clearly when we will deal with the problem under a numerical point of view we will be interested in bounded spatial domains and we will have to set a final time $T$.¨ 
 \end{observation}
-\begin{observation}
-Several boundary conditions can be imposed. In many applications they are a representation of the physical conditions that we want to reproduce. In these cases we can derive them from the physical model. Due to the multiplicity of the existing types of boundary conditions we do not treat their derivation in detail.
-\end{observation}
+Several boundary conditions can be imposed. In many applications they are a representation of the physical conditions that we want to reproduce. In these cases we can derive them from the physical model. Due to the multiplicity of the existing types of boundary conditions we do not treat their derivation in detail. 
+
+%However we present a particular class of boundary conditions named "inflow-outflow" which will be the reference ones in our numerical context.
+%\subsection{Inflow-outflow boundary condition}
+%The inflow-outflow boundary condition consists in imposing
+%$$ \min{\left\lbrace\frac{\partial\mathbf{F}}{\partial \uvec{u}}(\uvec{u}(\uvec{x}))\cdot \uvec{\nu}(\uvec{x}) \cdot (\uvec{u}(\uvec{x})-\uvec{u}_b(\uvec{x})) ,\uvec{0}\right\rbrace }=\uvec{0} \quad \forall \uvec{x} \in \partial{\Omega} $$
+%where $\uvec{u}_b:\partial{\Omega}\rightarrow \mathbb{R}^N$ is a given function and the minimum is meant component by component.
+%This corresponds to
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Weak solutions}
 A "classical" or "strong" solution to \ref{sys} is a smooth-enough vectorial function satisfying it pointwise (and obviously satisfying also the initial and the bounndary conditions).
 It is well known that the notion of "classical" solution is not "sufficient": for nonlinear fluxes we can get discontinuities in the solution even if we start from smooth initial conditions. In the general case there is no hope to find a strong solution.
@@ -973,7 +1010,7 @@ $$\uapp(\uvec{x}_j,t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}_j)=\sum_{i=1}^
 This is in general not true for other choices of the basis, for example for the Bernstein polynomials.
 \end{observation}
 Now we have all the elements that we need to go into the details of the Residual Distribution approach. We will at first neglect the boundary conditions.
-Basically the Residual Distri can be summarised into three steps:
+Basically the Residual Distribution can be summarised into three steps:
 \begin{itemize}
 \item[i)] \textbf{Definition of the element residuals}\\
 For each element $K$ of the tessellation $\tess$ we define the element residual $\uvec{\Phi}^K(t)$ which is the integral in space of the equation \ref{sys} over the element $K$
@@ -992,10 +1029,10 @@ $$\forall K \in \tess \quad \forall \uvec{x}_i \in K \quad \uvec{\Phi}^K_i(t) \q
 \item[iii)] \textbf{Imposition of the balance at the nodes}\\
 For each degree of freedom $\uvec{x}_i$ we impose an equilibrium between all the node residuals $\uvec{\Phi}^K_i(t)$ of the elements that contain that degree of freedom 
 \begin{equation}
-\label{balance}
+\label{nodebalance}
 \sum_{K \in K_i} \uvec{\Phi}^K_i(t)=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I
 \end{equation}
-where we recall that $K_i$ is the set of the elements of the tessellation containing the node $\uvec{x}_i$. The balance \ref{balance} represents the semidiscrete formulation of the Residual Distribution method, a system of nonlinear ODEs that we have to solve in time.
+where we recall that $K_i$ is the set of the elements of the tessellation containing the node $\uvec{x}_i$. The balance \ref{nodebalance} represents the semidiscrete formulation of the Residual Distribution method, a system of nonlinear ODEs that we have to solve in time.
 \end{itemize}
 We will now give a physical interpretation of the Residual Distribution approach. Let's go back to the steps of the method and look at them under a new prespective.
 \begin{itemize}
@@ -1045,9 +1082,10 @@ The three steps are represented in figure \ref{RD}.
 \label{RD}
 \end{figure}
 Up to now the method is very general and also very abstract since we didn't specify how to define the node residuals $\uvec{\Phi}^K_i(t)$. The features of the particular Residual Distribution method depend on the choice of the node residuals.
-We will now present some examples of suitable node residuals
 
+\subsection{Some examples of node residuals}
 
+We will now present some examples of suitable node residuals and show that they fulfil the conservation property \ref{conservation}.
 
 
 \begin{itemize}
@@ -1061,8 +1099,8 @@ $$\uvec{\Phi}^K_i(t)=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{
 where $\overline{\uvec{c}}_K(t)$ is the average of the coefficients of the approximated solution associated to the nodes belonging to the cell $K$ i.e.
 $$\overline{\uvec{c}}_K(t)=\frac{1}{\#\lbrace\uvec{x}_i \in K\rbrace}\sum_{\uvec{x}_i \in K}\uvec{c}_i(t)$$
 and $\alpha_K(\uvec{u}_h)$ is defined through the Jacobian matrix of the flux in the following way
-$$\alpha_K(\uvec{u}_h)=\sup\limits_{\substack{\uvec{x}\in f \\ f\in \partial{K}}}\rho \left( \frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h) \nu \right)$$ 
-where $\rho\left( \frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h) \nu \right)$ is the spectral radius of the matrix $ \frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h) \nu $ i.e. the supremum of the absolute values of its eigenvalues;
+$$\alpha_K(\uvec{u}_h)=\sup\limits_{\substack{\uvec{x}\in f \\ f\subset \partial{K}}}\rho \left( \frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h) \nu \right)$$ 
+where $\rho\left( \frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h) \nu \right)$ is the spectral radius of the matrix $ \frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h) \nu $ i.e. the supremum of the absolute values of its eigenvalues and $f$ is a generic $D-1$-dimensional face of the generic element $K$ of the tessellation;
 
 
 
@@ -1078,12 +1116,12 @@ where $h_K$ is a constant depending on the cell $K$ and $\tau\in \mathbb{R}^+$ i
 
 \item[•] \textbf{Burman}\\
 $$\uvec{\Phi}^K_i(t)=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
-$$+\sum_{f\in\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x})  d\sigma(\uvec{x})+$$
+$$+\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x})  d\sigma(\uvec{x})+$$
 \begin{equation}
 \label{Burman}
 -\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x} \quad t\in [0,T]
 \end{equation}
-where $f$ is a generic $D-1$-dimensional face of the generic element $K$ of the tessellation, $\theta\in \mathbb{R^+}$ is a positive parameter, $h_f$ is a constant depending on the face $f$, $[\![ \cdot ]\!]$ represents the jump of the argument across $f$ i.e.
+where $f$ is a generic $D-1$-dimensional face of the generic element $K$, $\theta\in \mathbb{R^+}$ is a positive parameter, $h_f$ is a constant depending on the face $f$, $[\![ \cdot ]\!]$ represents the jump of the argument across $f$ i.e.
 $$[\![ g(\uvec{x}) ]\!]=g\vert_K(\uvec{x})-g\vert_{K^+}(\uvec{x}) \quad \forall x \in f$$
 with $K^+$ the element of the tessellation sharing the face $f$ with $K$ and $\cdot\vert_K$ and $\cdot\vert_{K^+}$ representing the restrictions to $K$ and $K^+$ thus
 $$g\vert_K(\uvec{x})=\lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} \\ \uvec{y}\in K}}g(\uvec{y})$$ 
@@ -1115,7 +1153,10 @@ For all of them it follows from the normalization \ref{normalization} that we ha
 $$\sum_{i=1}^I\varphi_i(\uvec{x}) \equiv 1 \quad \forall \uvec{x} \in \overline{\Omega}.$$
 In order to verify that the conservation relation holds let's observe that they all can be written in the form
 $$\uvec{\Phi}^K_i(t)=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
-$$-\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x}+\ST(\uapp) \quad t\in [0,T]$$
+\begin{equation}
+\label{stabilizedgalerkin}
+-\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x}+\ST(\uapp) \quad t\in [0,T]
+\end{equation}
 where $\ST(\uapp)$ is a stabilization term depending on the approximated solution $\uapp$.
 We have 
 \begin{itemize}
@@ -1124,7 +1165,7 @@ $$\ST(\uapp)=\alpha_K(\uvec{u}_h)\left(\uvec{c}_i(t)-\overline{\uvec{c}}_K(t) \r
 \item[•] \textbf{SUPG}
 $$\ST(\uapp)=h_K \int_K \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\varphi_i(\uvec{x})\right] \tau \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\uvec{u}_h(\uvec{x},t)\right]d\uvec{x} \quad t\in [0,T];$$
 \item[•] \textbf{Burman}
-$$\ST(\uapp)=\sum_{f\in\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!]  \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x}) d\sigma(\uvec{x})\quad t\in [0,T].$$
+$$\ST(\uapp)=\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!]  \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x}) d\sigma(\uvec{x})\quad t\in [0,T].$$
 
 \end{itemize}
 If we make now the sum of these nodal residuals associated to the nodes of a cell $K$ we get
@@ -1166,13 +1207,22 @@ $$\sum_{\uvec{x}_i \in K}\ST(\uapp)=\sum_{\uvec{x}_i \in K}h_K \int_K \left[\fra
 $$h_K \int_K \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\left(\sum_{\uvec{x}_i \in K}\varphi_i(\uvec{x})\right)\right] \tau \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\uvec{u}_h(\uvec{x},t)\right]d\uvec{x}\equiv\uvec{0}\quad \forall t\in [0,T]$$
 because $\sum_{\uvec{x}_i \in K}  \varphi_i(\uvec{x}) \equiv 1\quad \forall x \in K$ and so its gradient is identically $0$ in $K$ as we observed in \ref{gradient};
 \item[•] \textbf{Burman}
-$$\sum_{\uvec{x}_i \in K}\ST(\uapp)=\sum_{\uvec{x}_i \in K}\sum_{f\in\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x}) d\sigma(\uvec{x})=$$
-$$=\sum_{f\in\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \left( \sum_{\uvec{x}_i \in K}\varphi_i\vert_K(\uvec{x})\right) d\sigma(\uvec{x})\equiv\uvec{0}\quad \forall t\in [0,T]$$
+$$\sum_{\uvec{x}_i \in K}\ST(\uapp)=\sum_{\uvec{x}_i \in K}\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x}) d\sigma(\uvec{x})=$$
+$$=\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \left( \sum_{\uvec{x}_i \in K}\varphi_i\vert_K(\uvec{x})\right) d\sigma(\uvec{x})\equiv\uvec{0}\quad \forall t\in [0,T]$$
 again because of \ref{gradient} since we are considering the limit at the boundary of the restriction to $K$ of the gradient of the function $\sum_{\uvec{x}_i \in K}  \varphi_i(\uvec{x})$ which is constant in $K$ and so
 $$\nabla_{\uvec{x}} \left( \sum_{\uvec{x}_i \in K}\varphi_i\vert_K(\uvec{x})\right)=\nabla_{\uvec{x}} \left( \sum_{\uvec{x}_i \in K} \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} \\ \uvec{y}\in K}}\varphi_i(\uvec{y})\right)=$$
-$$=\nabla_{\uvec{x}} \left(  \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} \\ \uvec{y}\in K}}\sum_{\uvec{x}_i \in K} \varphi_i(\uvec{y})\right)=\nabla_{\uvec{x}}1\equiv 0 \quad \forall x \in f \quad \forall f \in \partial{K}.$$  
+$$=\nabla_{\uvec{x}} \left(  \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} \\ \uvec{y}\in K}}\sum_{\uvec{x}_i \in K} \varphi_i(\uvec{y})\right)=\nabla_{\uvec{x}}1\equiv 0 \quad \forall x \in f \quad \forall f\subset \partial{K}.$$  
 \end{itemize}
 \end{proof}
+
+\subsection{A focus on the balance equations and on the mass matrix}
+We will now go deeper into the details of the method. Let's focus on the balance \ref{nodebalance} that we recall here
+$$\sum_{K \in K_i} \uvec{\Phi}^K_i(t)=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+We will write explicitely the equations of this system of ODEs for the mentioned node residuals.
+
+
+
+
 
 
 %Example of the system of equations
@@ -1211,6 +1261,7 @@ $$=\nabla_{\uvec{x}} \left(  \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} 
 
 
 
+\subsection{On the derivation of Lax-Friedrichs, SUPG and Burman node residuals}
 
 
 Let's make some observations on the derivations of the first three node residuals: Lax-Friedrichs, SUPG and Burman.
