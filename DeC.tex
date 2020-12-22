@@ -48,6 +48,8 @@
 \newcommand{\source}[0]{\mathbf{S}}
 \newcommand{\ST}[0]{\mathbf{ST}_i^K}
 
+\newcommand{\elres}[0]{\uvec{\Phi}^K(t,\uapp)}
+\newcommand{\noderes}[0]{\uvec{\Phi}^K_i(t,\uapp)}
 
 
 \def\restriction#1#2{\mathchoice
@@ -880,7 +882,7 @@ Often the reference spatial domain for the numerical method is just an approxima
 \end{observation}
 A common approach to solve numerically a system of balance laws consists in "splitting" the resolution of the equation in space and the resolution of the equation in time. We assume at any time $t \in [0,T]$ the approximated solution $\uapp$ in a finite dimensional space $(V_h)^N$ where $V_h=span\lbrace \varphi_i\rbrace_{i=1,2,\dots,I}$ and the (known) functions $\varphi_i:\overline{\Omega}\rightarrow \mathbb{R}$ are a basis of $V_h$ and depend just on space. 
 \begin{observation}
-The functions $\varphi_i$ are usually but not mandatorily piecewise polynomial functions. Each one of them corresponds usually to a node $\uvec{x}_i$ located somewhere in the closure of the discretized spatial domain. These nodes are often referred as the degrees of freedom, DoFs, of the approximated solution. 
+The functions $\varphi_i$ are usually but not mandatorily piecewise polynomial functions. Each one of them corresponds usually to a node $\uvec{x}_i$ located somewhere in the closure of the discretized spatial domain. In these cases we have that the value of the basis function $\varphi_i$ in its associated node $\uvec{x}_i$ is not $0$ i.e. $\varphi_i(\uvec{x}_i)\neq0$. The nodes $\uvec{x}_i$ $i=1,2,\dots,I$ are often referred as the degrees of freedom, DoFs, of the approximated solution. 
 \end{observation}
 In other words we require every component of the approximated solution at any time $t$ to be in the space of functions $V_h$.
 In practice we are assuming 
@@ -920,8 +922,14 @@ The Finite Volume methods are characterized by a different approach. The coeffic
 \end{observation}
 \begin{observation}
 %FV -> polynomials of order 0
-%Euler first order -> 
-In general a spatial discretization made with polynomial functions $\varphi_i$ of order $R$ and an ODE solver $R+1$-order accurate lead to a globally $R+1$-order accurate scheme. This means that the coefficients $\tilde{\uvec{c}}(t^{*})$ that characterize the approximated solution $\uvec{u}_h$ at the time $t^{*}$ determined through the used method are $R+1$-order accurate approximations of the coefficients $\uvec{c}(t^{*})$ that we obtain projecting the exact solution at the time $t^{*}$ over $(V_h)^N$.
+%Euler first order -> order 1 accuracy
+%=> Order 1 accuracy
+%FV -> Linear reconstruction = polynomials of order 1
+%second order RK -> order 2 accuracy
+%=> Order 2 accuracy
+%But not always, for example in SUPG and more in genreal in RD schemes Galerkin +diffusion with a stabilization term not consistent
+Generally a spatial discretization made with polynomial functions $\varphi_i$ of order $R$ and an ODE solver $R+1$-order accurate lead to a globally $R+1$-order accurate scheme. This means that the coefficients $\tilde{\uvec{c}}(t^{*})$ that characterize the approximated solution $\uvec{u}_h$ at the time $t^{*}$ determined through the used method are $R+1$-order accurate approximations of the coefficients $\uvec{c}(t^{*})$ that we obtain projecting the exact solution at the time $t^{*}$ over $(V_h)^N$.
+But let's underline that a spatial discretization made with polynomial functions of order $R$ and an ODE solver $R+1$-order accurate are just necessary but not sufficient ingredients for $R+1$-order accuracy. If the equations of the system \ref{semidiscr} are not carefully derived, the accuracy is wasted and we get unexpected low orders of convergence.
 \end{observation}
 Let's now present more in detail the Residual Distribution and the Discontinuous Galerkin Finite Elements methods.
 \section{Residual Distribution}
@@ -979,7 +987,7 @@ $$V_h=\lbrace g \in C^0(\overline{\Omega}) \quad s.t. \quad g\vert_K \in \mathbb
 To this end we choose a basis $\lbrace \varphi_i \rbrace_{i=1,2,\dots,I}$ of $V_h$, for example the Lagrange polynomials or the Bernstein polynomials, and we assume the discretization \ref{discr} that is recalled here
 $$\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}) \quad \forall(\uvec{x},t)\in \overline{\Omega}\times [0,T]$$
 with $\uvec{c}_i(t)$ $N$-dimensional coefficients dedpending on time.
-The general basis function $\varphi_i$ is associated to a node $\uvec{x}_i\in\overline{\Omega}$. These $I$ nodes associated to the $I$ basis functions are the degrees of freedom of the solution and belong in general to one or more elements of the tessellation $\tess$. Each basis function $\varphi_i$ has its support contained in the union of the elements containing the node to which it is associated.
+The general basis function $\varphi_i$ is associated to a node $\uvec{x}_i\in\overline{\Omega}$ and is such that $\varphi_i(\uvec{x}_i) \neq 0$. These $I$ nodes associated to the $I$ basis functions are the degrees of freedom of the solution and belong in general to one or more elements of the tessellation $\tess$. Each basis function $\varphi_i$ has its support contained in the union of the elements containing the node to which it is associated.
 In other words if $\varphi_i$ is associated to the node $\uvec{x}_i\in \overline{\Omega}$ and we denote with $K_i$ the set of the elements of the tessellation containing the node $\uvec{x}_i$ i.e.
 $$K_i=\lbrace K\in \tess \quad s.t. \quad \uvec{x}_i\in K \rbrace$$ 
 then $\varphi_i \in C^0_o(\cup_{K \in K_i} K)$.
@@ -1009,28 +1017,32 @@ Thus in this case the coefficients $\uvec{c}_j(t)$ of the discretization \ref{di
 $$\uapp(\uvec{x}_j,t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}_j)=\sum_{i=1}^I\uvec{c}_i(t)\delta_{ij}=\uvec{c}_j(t) \quad \forall t \in [0,T].$$
 This is in general not true for other choices of the basis, for example for the Bernstein polynomials.
 \end{observation}
-Now we have all the elements that we need to go into the details of the Residual Distribution approach. We will at first neglect the boundary conditions.
+Now we have all the elements that we need to go into the details of the Residual Distribution approach.
+
+
+%RD
+
 Basically the Residual Distribution can be summarised into three steps:
 \begin{itemize}
 \item[i)] \textbf{Definition of the element residuals}\\
-For each element $K$ of the tessellation $\tess$ we define the element residual $\uvec{\Phi}^K(t)$ which is the integral in space of the equation \ref{sys} over the element $K$
+For each element $K$ of the tessellation $\tess$ we define the element residual $\elres$ which is the integral in space of the equation \ref{sys} over the element $K$
 \begin{equation}
 \label{elementres}
-\forall K \in \tess \quad \uvec{\Phi}^K(t)=\int_K 
+\forall K \in \tess \quad \elres=\int_K 
 \left[\frac{\partial}{\partial t}\uapp(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uapp(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t))\right] d\uvec{x}  \quad t \in [0,T];
 \end{equation}
 \item[ii)] \textbf{Definition of the node residuals}\\
-For each element $K$ we consider the degrees of freedom belonging to it, $\uvec{x}_i \in K$, and define the node residuals $\uvec{\Phi}^K_i(t)$ such that they satisfy a specific conservation relation
-$$\forall K \in \tess \quad \forall \uvec{x}_i \in K \quad \uvec{\Phi}^K_i(t) \quad t \in [0,T] \quad s.t.$$
+For each element $K$ we consider the degrees of freedom belonging to it, $\uvec{x}_i \in K$, and define the node residuals $\noderes$ such that they satisfy a specific conservation relation
+$$\forall K \in \tess \quad \forall \uvec{x}_i \in K \quad \noderes \quad t \in [0,T] \quad s.t.$$
 \begin{equation}
 \label{conservation}
-\sum_{\uvec{x}_i \in K} \uvec{\Phi}^K_i(t)=\uvec{\Phi}^K(t) \quad \forall K \in \tess \quad \forall t  \in [0,T];
+\sum_{\uvec{x}_i \in K} \noderes=\elres \quad \forall K \in \tess \quad \forall t  \in [0,T];
 \end{equation}
 \item[iii)] \textbf{Imposition of the balance at the nodes}\\
-For each degree of freedom $\uvec{x}_i$ we impose an equilibrium between all the node residuals $\uvec{\Phi}^K_i(t)$ of the elements that contain that degree of freedom 
+For each degree of freedom $\uvec{x}_i$ we impose an equilibrium between all the node residuals $\noderes$ of the elements that contain that degree of freedom 
 \begin{equation}
 \label{nodebalance}
-\sum_{K \in K_i} \uvec{\Phi}^K_i(t)=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I
+\sum_{K \in K_i} \noderes=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I
 \end{equation}
 where we recall that $K_i$ is the set of the elements of the tessellation containing the node $\uvec{x}_i$. The balance \ref{nodebalance} represents the semidiscrete formulation of the Residual Distribution method, a system of nonlinear ODEs that we have to solve in time.
 \end{itemize}
@@ -1045,13 +1057,13 @@ If we integrate this quantity over each element $K$ of the tessellation at a gen
 $$
 \int_K \left[\frac{\partial}{\partial t}\uvec{u}(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uvec{u}(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))\right]d\uvec{x}=\uvec{0} \quad \forall t \in \mathbb{R}^+_0.
 $$
-This is the meaning of the element residuals $\uvec{\Phi}^K(t)$ even if obviously to evaluate them in our numerical method we consider the approximated solution $\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x})$ in place of the exact solution $\uvec{u}$.
+This is the meaning of the element residuals $\elres$ even if obviously to evaluate them in our numerical method we consider the approximated solution $\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x})$ in place of the exact solution $\uvec{u}$.
 \item[ii)] \textbf{Isolation of the contributions of the nodes to the element balance}\footnote{This step is sometimes referred as the "splitting" of the element residual into the node residuals. Up to the author opinion it doesn't express at all the physics behind the operation, for this reason we will try to avoid this expression in the document.}\\ 
-We isolate the contribution of each degree of freedom $\uvec{x}_i$ in the cell $K$ to the integral balance that we have in that cell. The node residuals $\uvec{\Phi}^K_i(t)$ are nothing more than the contributions of the nodes to the balance in the cell $K$ represented by $\uvec{\Phi}^K(t)$. This fact is expressed by the conservation relation \ref{conservation} that the node residuals must fulfil 
-$$\sum_{\uvec{x}_i \in K} \uvec{\Phi}^K_i(t)=\uvec{\Phi}^K(t) \quad \forall K \in \tess \quad \forall t  \in [0,T].$$
+We isolate the contribution of each degree of freedom $\uvec{x}_i$ in the cell $K$ to the integral balance that we have in that cell. The node residuals $\noderes$ are nothing more than the contributions of the nodes to the balance in the cell $K$ represented by $\elres$. This fact is expressed by the conservation relation \ref{conservation} that the node residuals must fulfil 
+$$\sum_{\uvec{x}_i \in K} \noderes=\elres \quad \forall K \in \tess \quad \forall t  \in [0,T].$$
 \item[iii)] \textbf{Imposition of a staggered balance at the nodes}\\
 Once we isolated the node contributions to the element balance in each cell we impose a new "staggered equilibrium" at the nodes. The sum of the contributions that each node offers to the elements to which it belongs is $0$ i.e.
-$$\sum_{K \in K_i} \uvec{\Phi}^K_i(t)=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I$$
+$$\sum_{K \in K_i} \noderes=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I$$
 This is indeed a reasonable conservation requirement: nothing is created or destroyed at the nodes. The global contribution of each node to all the balances of all elements that share it is $0$.
 \end{itemize}
 The three steps are represented in figure \ref{RD}.
@@ -1081,7 +1093,10 @@ The three steps are represented in figure \ref{RD}.
 \caption{The three steps of the Residual Distribution method.}
 \label{RD}
 \end{figure}
-Up to now the method is very general and also very abstract since we didn't specify how to define the node residuals $\uvec{\Phi}^K_i(t)$. The features of the particular Residual Distribution method depend on the choice of the node residuals.
+Up to now the method is very general and also very abstract since we didn't specify how to define the node residuals $\noderes$. The features of the particular Residual Distribution method depend on the choice of the node residuals.
+\begin{observation}
+We have neglected the boundary conditions due to the huge variety of existing ones and the different ways to implement them. We just say that whenever they are not imposed strongly, i.e. fixing the coefficients $\uvec{c}_i(t)$ for the nodes belonging to the boundary, they are usually taken into account by defining some boundary residuals which are added in the balances of the nodes on the boundary. This is for example what is done for the inflow-outflow boundary conditions. Anyway the structure of the Defect Correction applied to the Residual Distribution method as well as the proofs of the properties of the operators $\lopd^1$ and $\lopd^2$ that we will define doesn't change much when we include the boundary conditions.
+\end{observation}
 
 \subsection{Some examples of node residuals}
 
@@ -1091,7 +1106,7 @@ We will now present some examples of suitable node residuals and show that they 
 \begin{itemize}
 
 \item[•] \textbf{Lax-Friedrichs}\\
-$$\uvec{\Phi}^K_i(t)=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
+$$\noderes=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
 \begin{equation}
 \label{Lax-Friedrichs}
 +\alpha_K(\uvec{u}_h)\left(\uvec{c}_i(t)-\overline{\uvec{c}}_K(t) \right)-\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x} \quad t\in [0,T]
@@ -1105,7 +1120,7 @@ where $\rho\left( \frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h) \nu \r
 
 
 \item[•] \textbf{SUPG}\\
-$$\uvec{\Phi}^K_i(t)=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
+$$\noderes=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
 $$+h_K \int_K \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\varphi_i(\uvec{x})\right] \tau \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\uvec{u}_h(\uvec{x},t)\right]d\uvec{x}+$$
 \begin{equation}
 \label{SUPG}
@@ -1115,7 +1130,7 @@ where $h_K$ is a constant depending on the cell $K$ and $\tau\in \mathbb{R}^+$ i
 
 
 \item[•] \textbf{Burman}\\
-$$\uvec{\Phi}^K_i(t)=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
+$$\noderes=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
 $$+\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x})  d\sigma(\uvec{x})+$$
 \begin{equation}
 \label{Burman}
@@ -1130,7 +1145,7 @@ for any $x \in f$;
 \item[•] \textbf{Non-variational node residuals}
 \begin{equation}
 \label{nonvar}
-\uvec{\Phi}^K_i(t)=\beta^K_i(\uvec{u}_h) \uvec{\Phi}^K(t) \quad t\in [0,T]
+\noderes=\beta^K_i(\uvec{u}_h) \elres \quad t\in [0,T]
 \end{equation}
 where $\beta^K_i(\uvec{u}_h)$ are some coefficients depending on the approximated solution verifying 
 \begin{equation}
@@ -1140,7 +1155,7 @@ where $\beta^K_i(\uvec{u}_h)$ are some coefficients depending on the approximate
 \end{itemize}
 Let's verify that the conservation relation \ref{conservation} holds for all these types of node residuals.
 For what concerns the last type of node residuals this follows trivially from the condition \ref{coefficients} imposed on the coefficients $\beta^K_i(\uvec{u}_h)$ in fact
-$$\sum_{\uvec{x}_i \in K}\uvec{\Phi}^K_i(t)=\sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)\uvec{\Phi}^K(t)=\left(\sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)\right)\uvec{\Phi}^K(t)=\uvec{\Phi}^K(t).$$
+$$\sum_{\uvec{x}_i \in K}\noderes=\sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)\elres=\left(\sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)\right)\elres=\elres.$$
 For the other node residuals let's refer to the next property.
 
 
@@ -1152,7 +1167,7 @@ The node residuals Lax-Friedrichs, SUPG and Burman given respectively in equatio
 For all of them it follows from the normalization \ref{normalization} that we have made on the test functions which is recalled here
 $$\sum_{i=1}^I\varphi_i(\uvec{x}) \equiv 1 \quad \forall \uvec{x} \in \overline{\Omega}.$$
 In order to verify that the conservation relation holds let's observe that they all can be written in the form
-$$\uvec{\Phi}^K_i(t)=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
+$$\noderes=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
 \begin{equation}
 \label{stabilizedgalerkin}
 -\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x}+\ST(\uapp) \quad t\in [0,T]
@@ -1169,10 +1184,10 @@ $$\ST(\uapp)=\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}}
 
 \end{itemize}
 If we make now the sum of these nodal residuals associated to the nodes of a cell $K$ we get
-$$\sum_{\uvec{x}_i \in K} \uvec{\Phi}^K_i(t)=\sum_{\uvec{x}_i \in K}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
+$$\sum_{\uvec{x}_i \in K} \noderes=\sum_{\uvec{x}_i \in K}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
 $$-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x}+\ST(\uapp)\Biggr].$$
 Due to the fact that we are dealing with a finite sum we can enter the sum under the integrals and, thanks to basic analysis, get
-$$\sum_{\uvec{x}_i \in K} \uvec{\Phi}^K_i(t)= \int_K \left(\sum_{\uvec{x}_i \in K}\varphi_i(\uvec{x})\right)\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}}\left(\sum_{\uvec{x}_i \in K}\varphi_i(\uvec{x})\right)\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$ 
+$$\sum_{\uvec{x}_i \in K} \noderes= \int_K \left(\sum_{\uvec{x}_i \in K}\varphi_i(\uvec{x})\right)\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}}\left(\sum_{\uvec{x}_i \in K}\varphi_i(\uvec{x})\right)\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$ 
 
 $$-\int_K  \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\left(\sum_{\uvec{x}_i \in K}  \varphi_i(\uvec{x})\right) d\uvec{x}-\int_K \ \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t))\left(\sum_{\uvec{x}_i \in K}\varphi_i(\uvec{x})\right) d\uvec{x}+ \sum_{\uvec{x}_i \in K}\ST(\uapp).$$
 Now we have the crucial point: since, as we already said, each basis function $\varphi_i$ has its support contained in the union of the elements containing the node to which it is associated then $\sum_{i=1}^I\varphi_i(\uvec{x}) \equiv 1 \quad \forall \uvec{x} \in \overline{\Omega}$ implies
@@ -1184,13 +1199,13 @@ because only the basis functions $\varphi_i$ s.t. the associated nodes $\uvec{x}
 \nabla_{\uvec{x}}\left(\sum_{\uvec{x}_i \in K}  \varphi_i(\uvec{x})\right)\equiv 0 \quad \forall x \in K.
 \end{equation}
 Thus we get
-$$\sum_{\uvec{x}_i \in K} \uvec{\Phi}^K_i(t)= \int_K \frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}}\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \ \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) d\uvec{x}+ \sum_{\uvec{x}_i \in K}\ST(\uapp)$$
+$$\sum_{\uvec{x}_i \in K} \noderes= \int_K \frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}}\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \ \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) d\uvec{x}+ \sum_{\uvec{x}_i \in K}\ST(\uapp)$$
 and applying the Gauss theorem to the second term of the right hand side we have
-$$\sum_{\uvec{x}_i \in K} \uvec{\Phi}^K_i(t)= \int_K \frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{K}div_{\uvec{x}}\uvec{F}(\uvec{u}_h(\uvec{x},t)) d\uvec{x}-\int_K \ \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) d\uvec{x}+ \sum_{\uvec{x}_i \in K}\ST(\uapp) \quad $$
+$$\sum_{\uvec{x}_i \in K} \noderes= \int_K \frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{K}div_{\uvec{x}}\uvec{F}(\uvec{u}_h(\uvec{x},t)) d\uvec{x}-\int_K \ \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) d\uvec{x}+ \sum_{\uvec{x}_i \in K}\ST(\uapp) \quad $$
 which, recalling the definition \ref{elementres} of the element residuals, reads
 \begin{equation}
 \label{intermediate}
-\sum_{\uvec{x}_i \in K}\uvec{\Phi}^K_i(t)=\uvec{\Phi}^K(t)+\sum_{\uvec{x}_i \in K}\ST(\uapp) \quad t\in [0,T].
+\sum_{\uvec{x}_i \in K}\noderes=\elres+\sum_{\uvec{x}_i \in K}\ST(\uapp) \quad t\in [0,T].
 \end{equation}
 All we need to prove now is that
 $$\sum_{\uvec{x}_i \in K}\ST(\uapp)\equiv\uvec{0}\quad \forall t\in [0,T].$$
@@ -1217,7 +1232,7 @@ $$=\nabla_{\uvec{x}} \left(  \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} 
 
 \subsection{A focus on the balance equations and on the mass matrix}
 We will now go deeper into the details of the method. Let's focus on the balance \ref{nodebalance} that we recall here
-$$\sum_{K \in K_i} \uvec{\Phi}^K_i(t)=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+$$\sum_{K \in K_i} \noderes=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 We will write explicitely the equations of this system of ODEs for the mentioned node residuals.
 
 
@@ -1227,7 +1242,7 @@ We will write explicitely the equations of this system of ODEs for the mentioned
 
 %Example of the system of equations
 
-%BCs -> inflow BCs
+%BCs -> inflow BCs NO
 
 
 
@@ -1304,21 +1319,26 @@ This is the semidiscrete formulation of the method a system of ODEs characterize
 
   
 %Derivation of the first three 
-%Galerkin with stabilization term
+%Galerkin with stabilization term STILL
 
-%Lax Friedrichs SUPG only first order accurate
+%Lax Friedrichs SUPG only first order accurate STILL
 
-%Construction of the mass matrix
+%Construction of the mass matrix STILL
 
-%Remark ODE
+%Remark ODE STILL
 
 
-%No need for numerical flux
+%No need for numerical flux STILL
 
-%Examples
+%Examples STILL
 
-%Boundary conditions: inflow - outflow
+%Boundary conditions: inflow - outflow NOOOOOOOOOOOOOOOO, DONE
 
+%Associated to some node in which the value is not 0 DONE
+
+%Accuracy of polynomials DONE
+
+%u_h,t DONE
 
 
 
