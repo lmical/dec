@@ -103,15 +103,16 @@ Institut für Mathematik\\
 
 \chapter{Abstract} 
 This work is an attempt to give a systematic introduction to the Deferred Correction method which provides an iterative procedure to get arbitrary high-order integration schemes for systems of ordinary differential equations.
-We can also apply the Deferred Correction in the context of Residual Distribution and Finite Elements methods for hyperbolic balance laws to get an explicit formulation and avoid the inversion of mass matrices.
+We can also apply the Deferred Correction in the context of Residual Distribution and Finite Elements methods for hyperbolic systems of balance laws to get an explicit formulation and avoid the inversion of mass matrices.
 The structure of this script is the following:
 \begin{itemize}
 \item[•] We start by introducing the Deferred Correction as a general method to approximate the solution of a general "tough" operator $\lopd^2$ with an arbitrary high-order precision through an iterative procedure which make use of the operator $\lopd^1$ which is a "naive" operator.
 Typically the "tough" operator $\lopd^2$ is an implicit high order operator difficult to solve while the "naive" operator $\lopd^1$ is an explicit low order operator easy to solve.
 \item[•] Then we apply this method to the context of the integration of systems of ordinary differential equations.
 \item[•] In order to apply the Deferred Correction to some numerical methods for solving hyperblic systems of balance laws, we present a small introduction of the analytical problem. We derive the balance laws and we introduce their weak formulation in order to overcome the limits of the classical one.
-\item[•] Then we present the Discontinuous Galerkin Finite Elements and Residual Distribution approaches from a general point of view. These are the methods on which we will focus.
-\item[•] Finally we will see how to apply the Deferred Correction to the context of the presented methods to get an explicit arbitrary high-order accurate formulation avoiding the inversion of mass matrices.
+\item[•] Thus we introduce from a general point of view the semidiscrete formulation which is a framework common to many numerical methods for hyperbolic systems of balance laws (like Residual Distribution and Discontinuous Galerkin Finite Elements) and focus on the problem of the inversion of the mass matrix.
+\item[•] Hence we present the Residual Distribution approach and see how to apply the Deferred Correction in this context where avoiding the inversion of the mass matrix without spoiling the accuracy of the scheme plays a crucial role.
+\item[•] Therefore we introduce the Discontinuous Galerkin Finite Elements method and show how the Deferred Correction can be enforced also in this case.
 \item[•] In the end we show how the Deferred Correction method as an ODE solver can be seen as a particular Runge-Kutta scheme.
 \end{itemize} 
 \chapter[The Deferred Correction in an abstract framework]{The Deferred Correction as a general procedure in an abstract framework}
@@ -439,7 +440,7 @@ Also in this case let's remark that the solution to the operator $\lopdt^1$ woul
 
 
 \section{From an operational perspective}
-All we need to prove is now that the operators $\lopdt^1$ and $\lopdt^2$ fulfil the hypoteses required to apply the Deferred Correction. If so we can apply the method \ref{DeC} in this specific context and get
+Before proving that the operators $\lopdt^1$ and $\lopdt^2$ fulfil the hypoteses required to apply the Deferred Correction let's make some practical considerations to give a clearer overview of the algorithm to implement. Assumed that the required properties hold, we can apply the method \ref{DeC} in this specific context and get
 \begin{equation}
 \label{DeCODE}
 \lopd^1(\underline{\uvec{u}}^{(p)})=\lopd^1(\underline{\uvec{u}}^{(p-1)})-\lopd^2(\underline{\uvec{u}}^{(p-1)}) \quad p=1,2,\dots,P
@@ -758,6 +759,7 @@ $$\sum_{d=1}^D \omega_d \frac{\partial\mathbf{F}_d}{\partial \uvec{u}}(\uvec{u})
 must have $D$ real eigenvalues and $D$ real eigenvectors $\forall \uvec{u} \in \mathcal{U}$ and $\forall \uvec{\omega}=(\omega_1,\dots,\omega_D)^T \in \mathbb{R}^D$.
 \end{observation}
 \section{Derivation of balance laws}
+We will now give a practical meaning to our analytical problem \ref{sys} by presenting its general derivation in the context of a generic real application.
 There is a huge number of phenomena in physics, chemistry, biology, engineering and social sciences that can be modeled through a vectorial equation like the one in \ref{sys}. Basically whenever we want to express the conservation of some quantities, the components of the vector of the conserved quantities $\uvec{u}$, over a certain volume $\Omega$ (either physical or not) in a Eulerian formulation we end up with a hyperbolic system of balance laws. 
 We start by an integral balance at a general time $t \in \mathbb{R}^+_0$ for a general control volume $V \subseteq  \Omega$ with respect to the quantities of interest $\uvec{u}$ as represented in figure \ref{conservation}. The set $V$ is an arbitrary smooth-enough connected open subset of $\Omega$.  
 \begin{figure}[hp] \centering{\includegraphics[scale=0.5]{conservation.pdf}}
@@ -826,6 +828,7 @@ Several boundary conditions can be imposed. In many applications they are a repr
 
 
 \section{Weak solutions}
+We will now make a small description of the solutions that we expect to a system like \ref{sys}.
 A "classical" or "strong" solution to \ref{sys} is a smooth-enough vectorial function satisfying it pointwise (and obviously satisfying also the initial and the bounndary conditions).
 It is well known that the notion of "classical" solution is not "sufficient": for nonlinear fluxes we can get discontinuities in the solution even if we start from smooth initial conditions. In the general case there is no hope to find a strong solution.
 Since the mentioned discontinuities show up also in the phenomena that we want to model\footnote{Let's consider for example the shock waves generated by an aircraft moving at supersonic speed or discontinuities in the properties of non-homogeneous media.} this is not a negligible problem and we need to solve it. Let's notice also that the discontinuities in the solution determine a violation of the hypoteses of regularity under which we passed from the integral formulation to the differential one.
@@ -867,10 +870,12 @@ $$=\int_{\mathbb{R}^D \times \mathbb{R}^+_0} \source\varphi(\uvec{x},t) d\uvec{x
 
 Many other things can be said about weak solutions: it can be shown that a shock (a discontinuity of first kind) in a weak solution must fulfil the Rankine-Hugoniot condition which represents a relation between the "jump" and the "speed"; the weak solutions are in general not unique so we need a criterion to select the ones which have a physical meaning and this is often given by some inequalities, the weak solutions satisfying these inequalities are said "entropy solutions". 
 A deeper analysis is out of the purpose of this document. 
-What we have said so far can seem to be very distant from our initial goal of showing how to apply the Deferred Correction to the balance laws but in the author's opinion it was fundamental in order to give a clear idea of the problem that we are trying to solve. Moreover almost all the numerical methods are designed to detect approximations of  weak (eventually entropic) solutions.
-\chapter[Residual Distribution and DG]{The Residual Distribution and Discontinuous Galerkin approaches}
-We will now present the Residual Distribution and Discontinuous Galerkin Finite Elements methods\footnote{We will just present the methods without treating the problem of the convergence of the detected approximated solutions to the desired analytical weak ones.} but first let's introduce in general the semidiscrete formulation and focus on the problem of the inversion of the mass matrix.
-\section{Semidiscrete formulation and mass matrix}
+What we have said so far can seem to be very distant from our initial goal of showing how to apply the Deferred Correction to the balance laws but in the author's opinion it was fundamental in order to give a clear idea of the problem that we are trying to solve. Moreover almost all the numerical approaches are designed to detect approximations of  weak (eventually entropic) solutions.
+
+We can now enter into the details of the numerical methods for hyperbolic systems of balance laws.
+
+\chapter[Semidiscrete formulation and mass matrix]{The semidiscrete formulation and the role of the mass matrix}
+Before presenting the Residual Distribution and Discontinuous Galerkin Finite Elements methods\footnote{We will just present the methods without treating the problem of the convergence of the detected approximated solutions to the desired analytical weak ones.} and show how to apply the Residual Distribution in the context of these ones, we introduce from a general point of view the semidiscrete formulation which is a general strategy shared by several numerical methods for hyperbolic systems of balance laws (among which Residual Distribution and Discontinuous Galerkin Finite Elements) to deal separately with the space and time discretizations. It leads to a system of ODEs commonly involving a mass matrix. We will focus on the problem of the inversion of this matrix.\\
 We would like to solve numerically an hyperbolic system of balance laws in the general form \ref{sys} that we recall for clarity
 $$
 \frac{\partial}{\partial t}\uvec{u}+div_{\uvec{x}} \mathbf{F}=\mathbf{S} \quad \forall (\uvec{x},t) \in \Omega\times \mathbb{R}^+_0.
@@ -891,14 +896,16 @@ In practice we are assuming
 \uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}) \quad \forall(\uvec{x},t)\in \overline{\Omega}\times [0,T]
 \end{equation} 
 with $\uvec{c}_i(t) \in \mathbb{R}^N \quad \forall i=1,2,\dots, I \quad \forall t\in [0,T]$.
-
-
-Then, according to some mathematical and physical criteria, some relations based on the initial equation \ref{sys} are derived. From the combination of these relations and the discretization \ref{discr} we usually get a system of ordinary differential equations involving a mass matrix $\massmatrix$ which reads
+\begin{observation}
+The basis functions $\varphi_i$ are fixed and known, the only unknowns are the coefficients $\uvec{c}_i(t)$. Looking for $\uapp$ is equivalent to look for $\uvec{c}_i(t) \quad i=1,2,\dots, I \quad t\in [0,T]$.
+\end{observation}
+The problem is now to evaluate these coefficients in $[0,T]$.
+Thus, according to some mathematical and physical criteria, some relations based on the initial equation \ref{sys} are derived. From the combination of these relations and the discretization \ref{discr} we usually get a system of ordinary differential equations involving a mass matrix $\massmatrix$ which reads
 \begin{equation}
 \label{semidiscr}
 \massmatrix \frac{d}{dt}\uvec{c}(t)=\uvec{H}(t,\uvec{c}(t))
 \end{equation} 
-where the vector $\uvec{c}(t)$ has $I\times N$ dimensions and contains all the $N$-dimensional vectors $\uvec{c}_i(t)$ as components
+where the unknown vector $\uvec{c}(t)$ has $I\times N$ dimensions and contains all the $N$-dimensional unkonwn vectors $\uvec{c}_i(t)$ as components
 $$\uvec{c}(t)=\begin{pmatrix}
 \uvec{c}_1(t)\\
 \vdots\\
@@ -908,7 +915,7 @@ $$\uvec{c}(t)=\begin{pmatrix}
 \end{pmatrix}\in \mathbb{R}^{I\times N}.$$
 We have obviously $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ and $\uvec{H}(t,\uvec{c}(t))\in \mathbb{R}^{I\times N}$ $\forall t \in [0,T].$  
 The system of ODEs \ref{semidiscr} is usually referred as "semidiscrete formulation" of the particular method that we are using and we have to solve it in time.
-The initial $\uvec{c}(0)=\uvec{c}_0$ condition is given by the analytical initial condition on the hyperbolic system of balance laws \ref{sys} that we want to solve (projected into the finite dimensional space $(V_h)^N$).
+The initial condition $\uvec{c}(0)=\uvec{c}_0$ is given by the analytical initial condition on the hyperbolic system of balance laws \ref{sys} that we want to solve (projected into the finite dimensional space $(V_h)^N$).
 
 \begin{observation}
 The Discontinuous Galerkin and the Residual Distribution methods are based on this approach, so in both cases we get a coupled system of ODEs like the one in equation \ref{semidiscr}.
@@ -931,9 +938,9 @@ The Finite Volume methods are characterized by a different approach. The coeffic
 Generally a spatial discretization made with polynomial functions $\varphi_i$ of order $R$ and an ODE solver $R+1$-order accurate lead to a globally $R+1$-order accurate scheme. This means that the coefficients $\tilde{\uvec{c}}(t^{*})$ that characterize the approximated solution $\uvec{u}_h$ at the time $t^{*}$ determined through the used method are $R+1$-order accurate approximations of the coefficients $\uvec{c}(t^{*})$ that we obtain projecting the exact solution at the time $t^{*}$ over $(V_h)^N$.
 But let's underline that a spatial discretization made with polynomial functions of order $R$ and an ODE solver $R+1$-order accurate are just necessary but not sufficient ingredients for $R+1$-order accuracy. If the equations of the system \ref{semidiscr} are not carefully derived, the accuracy is wasted and we get unexpected low orders of convergence.
 \end{observation}
-Let's now present more in detail the Residual Distribution and the Discontinuous Galerkin Finite Elements methods.
-\section{Residual Distribution}
-Again we start from our initial problem.
+Let's now present more in detail the Residual Distribution and the Discontinuous Galerkin Finite Elements methods and see how to apply the Deferred Correction to get explicit arbitrary high-order accurate schemes for hyperbolic systems of balance laws.
+\chapter{The Residual Distribution method}
+In order to present the Residual Distribution method we refer again to our initial problem.
 We would like to find an approximation $\uapp$ in $\overline{\Omega} \times [0,T]$ of a weak (eventually entropic) solution of an hyperbolic system of balance laws whose general form is given by equation \ref{sys} which is recalled here
 $$
 \frac{\partial}{\partial t}\uvec{u}+div_{\uvec{x}} \mathbf{F}=\mathbf{S} \quad \forall (\uvec{x},t) \in \Omega\times \mathbb{R}^+_0.
@@ -1047,7 +1054,7 @@ For each degree of freedom $\uvec{x}_i$ we impose an equilibrium between all the
 \end{equation}
 where we recall that $K_i$ is the set of the elements of the tessellation containing the node $\uvec{x}_i$. The balance \ref{nodebalance} represents the semidiscrete formulation of the Residual Distribution method, a system of nonlinear ODEs that we have to solve in time.
 \end{itemize}
-We will now give a physical interpretation of the Residual Distribution approach. Let's go back to the steps of the method and look at them under a new prespective.
+We will now give a physical interpretation of the Residual Distribution approach. Let's go back to the steps of the method and look at them under a new perspective.
 \begin{itemize}
 \item[i)] \textbf{Balances at the elements}\\
 We start by an initial balance at each element. We consider our initial equation \ref{sys} and we move the source at the left hand side so to have
@@ -1099,7 +1106,7 @@ Up to now the method is very general and also very abstract since we didn't spec
 We have neglected the boundary conditions due to the huge variety of existing ones and the different ways to implement them. We just say that whenever they are not imposed strongly, i.e. fixing the coefficients $\uvec{c}_i(t)$ for the nodes belonging to the boundary, they are usually taken into account by defining some boundary residuals which are added in the balances of the nodes on the boundary. This is for example what is done for the inflow-outflow boundary conditions. Anyway the structure of the Deferred Correction applied to the Residual Distribution method as well as the proofs of the properties of the operators $\lopd^1$ and $\lopd^2$ that we will define doesn't change much when we include the boundary conditions.
 \end{observation}
 
-\subsection{Some examples of node residuals}
+\section{Some examples of node residuals}
 
 We will now present some examples of suitable node residuals and show that they fulfil the conservation property \ref{conservation}.
 
@@ -1229,7 +1236,7 @@ $$=\nabla_{\uvec{x}} \left(  \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} 
 \end{itemize}
 \end{proof}
 
-\subsection{A focus on the balance equations and on the mass matrix}
+\section{A focus on the balance equations and on the mass matrix}
 We will now go deeper into the details of the method. Let's focus on the balance \ref{nodebalance} that we recall here
 $$\sum_{K \in K_i} \noderes=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 We will write explicitely the equations of this system of ODEs for the mentioned node residuals.
@@ -1255,8 +1262,7 @@ $$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\
 
 
 
-This is the system of ODEs that we get with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals.
-The first term in \ref{RDGaldiss} "generates" the mass matrix $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ which, in this case, is positive defined and thus nonsingular but unfortunately sparse\footnote{This means that we cannot rely on the efficient algorithm designed for band matrices.}.
+This is the system of ODEs that we get with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals. We remind that the stabilization terms $\ST$ depend on the particular node residuals chosen. The first term in \ref{RDGaldiss} "generates" the mass matrix $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ which, in this case, is positive defined and thus nonsingular but unfortunately sparse\footnote{This means that we cannot rely on the efficient algorithm designed for band matrices.}.
 If we use insted the non-variational node residuals given by \ref{nonvar} we get
 $$\uvec{0}=\sum_{K\in K_i} \noderes=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h) \elres=$$
 $$=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h)\Biggl[ \int_K   \frac{\partial}{\partial t}\uapp(\uvec{x},t)d\uvec{x}+\int_{\partial{K}} \mathbf{F}(\uapp(\uvec{x},t))\cdot\nu d\sigma(\uvec{x})+$$
@@ -1284,43 +1290,14 @@ If in the first case avoiding to invert the mass matrix is just a matter of comp
 
 %BCs -> inflow BCs NO
 
-%div therorem
+%div therorem DONE
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\subsection{On the derivation of Lax-Friedrichs, SUPG and Burman node residuals}
+\section{On the derivation of Lax-Friedrichs, SUPG and Burman node residuals}
 
 
 Let's make some observations on the derivations of the first three node residuals: Lax-Friedrichs, SUPG and Burman.
-\begin{observation}
 The Residual Distribution schemes that we get by using these residuals are equivalent to a continuous Galerkin FEM scheme with some diffusion to avoid the pathologies of a central scheme.
 We will talk more in detail about the Galerkin finite elements method, or Galerkin FEM, later in the context of the Dicontinuous Galerkin schemes, but it's better to introduce some concepts now in order to have a clearer understanding of the meaning of the three mentioned node residuals.
 Basically the Galerkin FEM for hyperbolic systems of balance laws consists in a projection of the analytical weak formulation in space over a finite dimensional space. 
@@ -1338,7 +1315,7 @@ $$\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}) \quad \forall(\
 i.e. we assume at any time $t \in [0,T]$ the approximated solution $\uapp$ to belong to the finite dimensional space $(V_h)^N$ with $V_h=span\lbrace \varphi_i\rbrace_{i=1,2,\dots,I}$. The spatial basis functions $\varphi_i$ are very general: they do not have to be mandatorily polynomials or continuous\footnote{If the basis functions are continuous we get a continuous Galerkin FEM, otherwise we get a discontinuous Galerkin FEM.} but since we are trying to show the link between this approach and the Residual Distribution schemes with Lax-Friedrichs, SUPG and Burman node residuals we will consider the same space $V_h$ as the one considered in the Residual Distribution method i.e. the space of continuous, piecewise polynomial functions
 $$V_h=\lbrace g \in C^0(\overline{\Omega}) \quad s.t. \quad g\vert_K \in \mathbb{P}_M \quad \forall K \in \tess\rbrace.$$
 Let's remind that each function $\varphi_i$ is associated to a node $\uvec{x}_i \in \overline{\Omega}$ where its value is not $0$ and has support in the union of the elements of the tessellation containing that node.
-As we anticipated we now project \ref{weakspace} over the finite dimensional space $(V_h)^N$ i.e. we look for $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}) \quad t\in [0,T]$ s.t.
+Therefore as we anticipated we project \ref{weakspace} over the finite dimensional space $(V_h)^N$ i.e. we look for $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}) \quad t\in [0,T]$ s.t.
 
 $$\int_{\Omega} \varphi(\uvec{x}) \frac{\partial}{\partial t}\uapp(\uvec{x},t)  d\uvec{x}+ \int_{\partial \Omega} \varphi(\uvec{x})\mathbf{F}(\uapp(\uvec{x},t))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
 $$
@@ -1357,15 +1334,14 @@ $$
 and thus, thanks to basic analytic passages
 $$\sum_{j=1}^I \left(\int_{\Omega} \varphi_i(\uvec{x}) \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial \Omega} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
 $$
-+ \int_{\Omega} \mathbf{F}(\sum_{j=1}^I\uvec{c}_i(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
++ \int_{\Omega} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
 $$
 This is the semidiscrete formulation of the continuous Galerkin FEM method: a system of ODEs like \ref{semidiscr} characterized by a mass matrix $\massmatrix \in \mathbb{R}^{(I \times N) \times (I \times N)}$ positive defined but sparse. 
-We will now show that this system of ODEs is equivalent to the one in \ref{RDGaldiss} i.e. the system got with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals up to the presence of 
+We will now show that this system of ODEs is equivalent to the one in \ref{RDGaldiss} i.e. the system got with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals up to the presence of the stabilization terms.
 
 
 
 
-\end{observation}
 
   
 %Derivation of the first three 
