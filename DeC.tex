@@ -1025,11 +1025,12 @@ Now we have all the elements that we need to go into the details of the Residual
 Basically the Residual Distribution can be summarised into three steps:
 \begin{itemize}
 \item[i)] \textbf{Definition of the element residuals}\\
-For each element $K$ of the tessellation $\tess$ we define the element residual $\elres$ which is the integral in space of the equation \ref{sys} over the element $K$
+For each element $K$ of the tessellation $\tess$ we define the element residual $\elres$ which is what we get if we make the integral in space of the equation \ref{sys} over the element $K$ and apply the divergence theorem
+$$\forall K \in \tess \quad \elres=\int_K 
+\frac{\partial}{\partial t}\uapp(\uvec{x},t)d\uvec{x}+\int_{\partial{K}} \mathbf{F}(\uapp(\uvec{x},t))\cdot \nu d \sigma(\uvec{x})+$$
 \begin{equation}
 \label{elementres}
-\forall K \in \tess \quad \elres=\int_K 
-\left[\frac{\partial}{\partial t}\uapp(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uapp(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t))\right] d\uvec{x}  \quad t \in [0,T];
+-\int_K \mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t)) d\uvec{x}  \quad t \in [0,T];
 \end{equation}
 \item[ii)] \textbf{Definition of the node residuals}\\
 For each element $K$ we consider the degrees of freedom belonging to it, $\uvec{x}_i \in K$, and define the node residuals $\noderes$ such that they satisfy a specific conservation relation
@@ -1051,11 +1052,11 @@ We will now give a physical interpretation of the Residual Distribution approach
 \item[i)] \textbf{Balances at the elements}\\
 We start by an initial balance at each element. We consider our initial equation \ref{sys} and we move the source at the left hand side so to have
 $$
-\frac{\partial}{\partial t}\uvec{u}(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uvec{u}(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))=\uvec{0}
+\frac{\partial}{\partial t}\uvec{u}(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uvec{u}(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))=\uvec{0}.
 $$
-If we integrate this quantity over each element $K$ of the tessellation at a generic time $t$ we get the integral balance
+If we integrate this quantity over each element $K$ of the tessellation at a generic time $t$ and we apply the divergence theorem we get the integral balance
 $$
-\int_K \left[\frac{\partial}{\partial t}\uvec{u}(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uvec{u}(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))\right]d\uvec{x}=\uvec{0} \quad \forall t \in \mathbb{R}^+_0.
+\int_K \frac{\partial}{\partial t}\uvec{u}(\uvec{x},t)d\uvec{x}+\int_{\partial{K}} \mathbf{F}(\uvec{u}(\uvec{x},t))\cdot\nu d\sigma(\uvec{x})-\int_K \mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))d\uvec{x}=\uvec{0} \quad \forall t \in \mathbb{R}^+_0.
 $$
 This is the meaning of the element residuals $\elres$ even if obviously to evaluate them in our numerical method we consider the approximated solution $\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x})$ in place of the exact solution $\uvec{u}$.
 \item[ii)] \textbf{Isolation of the contributions of the nodes to the element balance}\footnote{This step is sometimes referred as the "splitting" of the element residual into the node residuals. Up to the author opinion it doesn't express at all the physics behind the operation, for this reason we will try to avoid this expression in the document.}\\ 
@@ -1200,8 +1201,6 @@ because only the basis functions $\varphi_i$ s.t. the associated nodes $\uvec{x}
 \end{equation}
 Thus we get
 $$\sum_{\uvec{x}_i \in K} \noderes= \int_K \frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}}\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \ \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) d\uvec{x}+ \sum_{\uvec{x}_i \in K}\ST(\uapp)$$
-and applying the Gauss theorem to the second term of the right hand side we have
-$$\sum_{\uvec{x}_i \in K} \noderes= \int_K \frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{K}div_{\uvec{x}}\uvec{F}(\uvec{u}_h(\uvec{x},t)) d\uvec{x}-\int_K \ \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) d\uvec{x}+ \sum_{\uvec{x}_i \in K}\ST(\uapp) \quad $$
 which, recalling the definition \ref{elementres} of the element residuals, reads
 \begin{equation}
 \label{intermediate}
@@ -1246,7 +1245,7 @@ $$\uvec{0}=\sum_{K\in K_i}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\par
 $$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x})) \varphi_i(\uvec{x}) d\uvec{x}+$$
 $$+\ST(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\Biggr]\quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 Thanks to basic analytic passages the previous nodal balances become
-$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec {x}_j \in K} \left(\int_K \varphi_i(\uvec{x}) \varphi_j(\uvec{x}) d \uvec{x}\right)\frac{\partial}{\partial t} \uvec{c}_j(t)+\sum_{K\in K_i}\Biggl[\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
+$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec {x}_j \in K} \left(\int_K \varphi_i(\uvec{x}) \varphi_j(\uvec{x}) d \uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)+\sum_{K\in K_i}\Biggl[\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
 $$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x})) \varphi_i(\uvec{x}) d\uvec{x}+$$
 \begin{equation}
 \label{RDGaldiss}
@@ -1260,21 +1259,24 @@ This is the system of ODEs that we get with the Residual Distribution method and
 The first term in \ref{RDGaldiss} "generates" the mass matrix $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ which, in this case, is positive defined and thus nonsingular but unfortunately sparse\footnote{This means that we cannot rely on the efficient algorithm designed for band matrices.}.
 If we use insted the non-variational node residuals given by \ref{nonvar} we get
 $$\uvec{0}=\sum_{K\in K_i} \noderes=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h) \elres=$$
-$$=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h)\int_K   \Biggl[  \frac{\partial}{\partial t}\uapp(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uapp(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+$$=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h)\Biggl[ \int_K   \frac{\partial}{\partial t}\uapp(\uvec{x},t)d\uvec{x}+\int_{\partial{K}} \mathbf{F}(\uapp(\uvec{x},t))\cdot\nu d\sigma(\uvec{x})+$$
+$$-\int_K\mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t)) d\uvec{x}\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 Substituiting again $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$ we have
-$$\uvec{0}=\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K   \Biggl[  \frac{\partial}{\partial t} \left(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})\right)+$$
-$$+div_{\uvec{x}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))-\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I$$
+$$\uvec{0}=\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\Biggl[\int_K     \frac{\partial}{\partial t} \left(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})\right)d \uvec{x}+$$
+$$+   \int_{\partial{K}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\nu d\sigma(\uvec{x})-\int_K\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) d\uvec{x}\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I$$
 and relying again on the fact that the only basis functions having support in $K$ are the ones corresponding to the nodes belonging to $K$ we get
-$$\uvec{0}=\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K   \Biggl[  \frac{\partial}{\partial t} \left(\sum_{\uvec{x}_j \in K}\uvec{c}_j(t)\varphi_j(\uvec{x})\right)+$$
-$$+div_{\uvec{x}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))-\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+$$\uvec{0}=\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\Biggl[\int_K     \frac{\partial}{\partial t} \left(\sum_{\uvec{x}_j\in K}\uvec{c}_j(t)\varphi_j(\uvec{x})\right)d \uvec{x}+$$
+$$+   \int_{\partial{K}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\nu d\sigma(\uvec{x})-\int_K\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) d\uvec{x}\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I$$
 Thanks to basic manipulations the previous node balances become
-$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec{x}_j \in K}\Biggl[\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K \varphi_j(\uvec{x})d\uvec{x}\Biggr]\frac{\partial}{\partial t}\uvec{c}_j(t)+$$
-$$+\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K \Biggl[div_{\uvec{x}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))+$$
+$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec{x}_j \in K}\Biggl[\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K \varphi_j(\uvec{x})d\uvec{x}\Biggr]\frac{d}{d t}\uvec{c}_j(t)+$$
+$$+\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\Biggl[\int_{\partial{K}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\nu d\sigma(\uvec{x})+$$
 \begin{equation}
 \label{RDnonvar}
--\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.
+-\int_K \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))    d\uvec{x}\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.
 \end{equation}
-
+This is the system of ODEs that we get with the Residual Distribution method and non-variational node residuals.
+Also in this case the mass matrix is given by the first term of the balance equation. In this case we do not even know if it is invertible or not and as, the reader may immediately notice, it depends on the coefficients $\uvec{c}_i(t)$ through the coefficients $\beta^K_i$ which take as argument the approximated solution $\uapp=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$.
+If in the first case avoiding to invert the mass matrix is just a matter of computational efficiency, now it is a must: even if we assume that it is nonsingular (which is not guaranteed), a traditional approach involving the inversion would imply at each time step to recompute (and invert) the mass matrix resulting in prohibitive computational times.
 
 
 
@@ -1355,13 +1357,10 @@ $$
 and thus, thanks to basic analytic passages
 $$\sum_{j=1}^I \left(\int_{\Omega} \varphi_i(\uvec{x}) \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial \Omega} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
 $$
-+ \int_{\Omega} \mathbf{F}(\sum_{j=1}^I\uvec{c}_i(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}=\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
++ \int_{\Omega} \mathbf{F}(\sum_{j=1}^I\uvec{c}_i(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
 $$
-
-
-
-This is the semidiscrete formulation of the continuous Galerkin FEM method: a system of ODEs like \ref{semidiscr} characterized by a mass matrix $\massmatrix \in \mathbb{R}^{(I \times N) \times (I \times N)}.$ 
-This mass matrix is defined positive and thus nonsingular but is sparse.
+This is the semidiscrete formulation of the continuous Galerkin FEM method: a system of ODEs like \ref{semidiscr} characterized by a mass matrix $\massmatrix \in \mathbb{R}^{(I \times N) \times (I \times N)}$ positive defined but sparse. 
+We will now show that this system of ODEs is equivalent to the one in \ref{RDGaldiss} i.e. the system got with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals up to the presence of 
 
 
 
