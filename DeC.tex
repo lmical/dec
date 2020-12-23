@@ -84,7 +84,7 @@ Institut für Mathematik\\
 \vspace{1.5cm} \\
 {\bf Lorenzo Micalizzi}\\
 \vspace{1.7cm}
-{\bf Defect Correction:} \\
+{\bf Deferred Correction:} \\
 {\bf from simple integration of systems of ordinary differential equations to explicit time-integration in Residual Distribution and Discontinuous Galerkin schemes for balance laws} \\
 \vspace{1.7cm}
 \vspace{1.2cm}
@@ -102,21 +102,21 @@ Institut für Mathematik\\
 \listoffigures
 
 \chapter{Abstract} 
-This work is an attempt to give a systematic introduction to the Defect Correction method which provides an iterative procedure to get arbitrary high-order integration schemes for systems of ordinary differential equations.
-We can also apply the Defect Correction in the context of Residual Distribution and Finite Elements methods for hyperbolic balance laws to get an explicit formulation and avoid the inversion of mass matrices.
+This work is an attempt to give a systematic introduction to the Deferred Correction method which provides an iterative procedure to get arbitrary high-order integration schemes for systems of ordinary differential equations.
+We can also apply the Deferred Correction in the context of Residual Distribution and Finite Elements methods for hyperbolic balance laws to get an explicit formulation and avoid the inversion of mass matrices.
 The structure of this script is the following:
 \begin{itemize}
-\item[•] We start by introducing the Defect Correction as a general method to approximate the solution of a general "tough" operator $\lopd^2$ with an arbitrary high-order precision through an iterative procedure which make use of the operator $\lopd^1$ which is a "naive" operator.
+\item[•] We start by introducing the Deferred Correction as a general method to approximate the solution of a general "tough" operator $\lopd^2$ with an arbitrary high-order precision through an iterative procedure which make use of the operator $\lopd^1$ which is a "naive" operator.
 Typically the "tough" operator $\lopd^2$ is an implicit high order operator difficult to solve while the "naive" operator $\lopd^1$ is an explicit low order operator easy to solve.
 \item[•] Then we apply this method to the context of the integration of systems of ordinary differential equations.
-\item[•] In order to apply the Defect Correction to some numerical methods for solving hyperblic systems of balance laws, we present a small introduction of the analytical problem. We derive the balance laws and we introduce their weak formulation in order to overcome the limits of the classical one.
+\item[•] In order to apply the Deferred Correction to some numerical methods for solving hyperblic systems of balance laws, we present a small introduction of the analytical problem. We derive the balance laws and we introduce their weak formulation in order to overcome the limits of the classical one.
 \item[•] Then we present the Discontinuous Galerkin Finite Elements and Residual Distribution approaches from a general point of view. These are the methods on which we will focus.
-\item[•] Finally we will see how to apply the Defect Correction to the context of the presented methods to get an explicit arbitrary high-order accurate formulation avoiding the inversion of mass matrices.
-\item[•] In the end we show how the Defect Correction method as an ODE solver can be seen as a particular Runge-Kutta scheme.
+\item[•] Finally we will see how to apply the Deferred Correction to the context of the presented methods to get an explicit arbitrary high-order accurate formulation avoiding the inversion of mass matrices.
+\item[•] In the end we show how the Deferred Correction method as an ODE solver can be seen as a particular Runge-Kutta scheme.
 \end{itemize} 
-\chapter[The Defect Correction in an abstract framework]{The Defect Correction as a general procedure in an abstract framework}
-%\chapter{The Defect Correction as a general procedure in an abstract framework}
-We will first introduce the Defect Correction in an abstract context.
+\chapter[The Deferred Correction in an abstract framework]{The Deferred Correction as a general procedure in an abstract framework}
+%\chapter{The Deferred Correction as a general procedure in an abstract framework}
+We will first introduce the Deferred Correction in an abstract context.
 Assume that we have two general operators depending on a parameter\footnote{This parameter represents the time-step in the context of the integration of ordinary differential equations, while it represents the characteristic mesh size in the application to hyperbolic balance laws. The esteems that we will get will be strictly depending on this parameter which has to be fixed in advance. In other words we are able to prove the arbitrary high-order consistency for a fixed $\Delta$ and what happens in the mesh refinment is still unclear from a theoretical point of view even if numerical experiments seem to confirm the desired order of convergence.} $\Delta$ between two normed vector spaces $\left(X, \norm{\cdot}_X \right)$ and $\left(Y, \norm{\cdot}_Y \right)$
 $$\lopd^1,\lopd^2:X \longrightarrow Y.$$
 \begin{observation}
@@ -127,7 +127,7 @@ We would like to solve $\lopd^2$ i.e. finding $\uvec{u}\in X$ such that $\lopd^2
 This observation was meant to provide a better understanding of the meaning of the operators $\lopd^1$ and $\lopd^2$ and of the direction that we are going to take. Let's now go back to our general framework, we focus more in detail later on the application to the evolution problems. 
 For the moment just imagine that we have to solve $\lopd^2$ because it provides a more accurate solution but this operator is difficult to solve. We would like to solve $\lopd^1$ instead of $\lopd^2$ because it is easier to solve but it is not enough accurate.
 In the next theorem we will provide a receipt to get a high-order approximation of the solution of $\lopd^2$ in an explicit way by combining the operators $\lopd^1$ and $\lopd^2$ through an iterative procedure.
-\begin{theorem} \textbf{Defect Correction}\\
+\begin{theorem} \textbf{Deferred Correction}\\
 If 
 \begin{itemize}
 \item[i)] \textbf{Existence of a unique solution to $\lopd^2$} \\
@@ -178,14 +178,14 @@ Let's make some final observations.
 \label{optimaliterations}
 If the solution $\usol$ of $\lopd^2$ is a $R$-th order approximation of the exact solution $\underline{\uvec{u}}^{ex}$ of a more general problem then a $R$-th order approximation $\underline{\tilde{\uvec{u}}}$ of $\usol$ is a $R$-th order approximation of the exact solution $\underline{\uvec{u}}^{ex}$ as well. It follows easily by applying the triangular inequality
 $$\norm{\underline{\tilde{\uvec{u}}}-\underline{\uvec{u}}^{ex}}_X \leq \norm{\underline{\tilde{\uvec{u}}}-\usol}_X+\norm{\usol-\underline{\uvec{u}}^{ex}}_X\leq O(\Delta^{R+1})+O(\Delta^{R+1})=O(\Delta^{R+1}).$$
-Thus in this case we have to use the Defect Correction procedure to approximate $\usol$ exactly with $R$-th order accuracy, any other extra precision in approximating $\usol$ would be useless\footnote{In the context of the integration of ordinary differential equations, the solution $\usol$ of $\lopd^2$ will be a $(M+1)$-th order accurate approximation of the exact solution $\underline{\uvec{u}}^{ex}$ and we will perform $P=M+1$ iterations to get $\underline{\uvec{u}}^{(M+1)}$ which will be a $(M+1)$-th order accurate approximation of $\usol$ and thus of $\underline{\uvec{u}}^{ex}$.}. We will be more precise about the accuracy and the number of iterations needed to reach the highest possible accuracy later.
+Thus in this case we have to use the Deferred Correction procedure to approximate $\usol$ exactly with $R$-th order accuracy, any other extra precision in approximating $\usol$ would be useless\footnote{In the context of the integration of ordinary differential equations, the solution $\usol$ of $\lopd^2$ will be a $(M+1)$-th order accurate approximation of the exact solution $\underline{\uvec{u}}^{ex}$ and we will perform $P=M+1$ iterations to get $\underline{\uvec{u}}^{(M+1)}$ which will be a $(M+1)$-th order accurate approximation of $\usol$ and thus of $\underline{\uvec{u}}^{ex}$.}. We will be more precise about the accuracy and the number of iterations needed to reach the highest possible accuracy later.
 \end{observation}
 \begin{observation} %%%%%%%%%%TRUE?
 The independecy of the coefficients $\alpha_1$ and $\alpha_2$ may naively lead us to think that we can easily consider the limit for $\Delta \rightarrow 0$ but this is not true at least from a theoretical point of view. In fact the whole framework has a non-trivial dependence on $\Delta$: the operators $\lopd^1$ and $\lopd^2$ as well as the spaces $X$ and $Y$ and the norms on them depend on $\Delta$. Despite this the numerical experiments seem to confirm the desired order of convergence.
 \end{observation}
-Now that we have introduced and proved the Defect Correction in a general framework, the only thing that it is left to do to apply it in a more specific context is to characterize the objects needed (the operators $\lopd^1$ and $\lopd^2$, the spaces $X$ and $Y$, the norms) and verify that the three hypoteses are satisfied.
-\chapter{The Defect Correction for systems of ODEs}
-We will now apply the Defect Correction method to the context of the integration of systems of ordinary differential equations.
+Now that we have introduced and proved the Deferred Correction in a general framework, the only thing that it is left to do to apply it in a more specific context is to characterize the objects needed (the operators $\lopd^1$ and $\lopd^2$, the spaces $X$ and $Y$, the norms) and verify that the three hypoteses are satisfied.
+\chapter{The Deferred Correction for systems of ODEs}
+We will now apply the Deferred Correction method to the context of the integration of systems of ordinary differential equations.
 Let's consider the Cauchy problem
 \begin{equation}
 \label{ODE}
@@ -196,7 +196,7 @@ Let's consider the Cauchy problem
 \end{equation}
 with $\uvec{u} \in \mathbb{R}^N$ and the usual hypoteses of regularity which ensure the existence of a unique solution i.e. $\uvec{G}$ continuous and Lipschitz-continuous with respect to $\uvec{u}$ uniformly with respect to $t$ with a Lipschitz constant $L$.
 We would like to approximate numerically the solution at the time $t_0+\Delta t$.
-We are now going to put the problem in a Defect Correction framework.
+We are now going to put the problem in a Deferred Correction framework.
 Clearly in this case the parameter $\Delta$ is the time step $\Delta t$.
 Let's now define the operators $\lopdt^1$ and $\lopdt^2$ and the normed vector spaces $X$ and $Y$.
 \section{Derivation of the operators $\lopdt^1$ and $\lopdt^2$}
@@ -372,7 +372,7 @@ $\uvec{u}^0$ is not an unkonwn and for this reason it is not a argument of the o
 \end{observation}
 \begin{observation}
 \label{obsnorm}
-The space $X=Y=\mathbb{R}^{(M \times N)}$ is finite dimensional so all the norms that we can define on it are equivalent. Despite this, the choice of the norms is crucial and not trivial. This is due to the fact that the constants $\alpha_1$ and $\alpha_2$ must not depend on $\delta$. If we choose wrong norms we may have that the sub-coercivity of $\lopd^1$ is true but not the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$. In particular, as it will be soon clear, the first property is almost trivial to verify, while the second will need more attention to be proved. In general we have to take advantage of this fact by designing the norms $\norm{\cdot}_X$ and $\norm{\cdot}_Y$ in such a way that the inequality of the sub-coercivity property of $\lopd^1$ results in an equality. The basic idea is that we have to satisfy two "conflicting property": roughly speaking, the sub-coercivity property of $\lopd^1$ means that we need the norm $\norm{\cdot}_X$ to be "smaller" than the norm $\norm{\cdot}_X$ while vice versa the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$ means the exact opposite. Again, since the first property is easier to be verified we need to design the norms to relax it at most, this results essential for the second property to be verified. This is the the general guideline to follow in the designing of two norms satisfying the desired properties if we wish to apply the Defect Correction to any context. Anyway this will be clearer when we will consider the the application to the balance laws.
+The space $X=Y=\mathbb{R}^{(M \times N)}$ is finite dimensional so all the norms that we can define on it are equivalent. Despite this, the choice of the norms is crucial and not trivial. This is due to the fact that the constants $\alpha_1$ and $\alpha_2$ must not depend on $\delta$. If we choose wrong norms we may have that the sub-coercivity of $\lopd^1$ is true but not the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$. In particular, as it will be soon clear, the first property is almost trivial to verify, while the second will need more attention to be proved. In general we have to take advantage of this fact by designing the norms $\norm{\cdot}_X$ and $\norm{\cdot}_Y$ in such a way that the inequality of the sub-coercivity property of $\lopd^1$ results in an equality. The basic idea is that we have to satisfy two "conflicting property": roughly speaking, the sub-coercivity property of $\lopd^1$ means that we need the norm $\norm{\cdot}_X$ to be "smaller" than the norm $\norm{\cdot}_X$ while vice versa the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$ means the exact opposite. Again, since the first property is easier to be verified we need to design the norms to relax it at most, this results essential for the second property to be verified. This is the the general guideline to follow in the designing of two norms satisfying the desired properties if we wish to apply the Deferred Correction to any context. Anyway this will be clearer when we will consider the the application to the balance laws.
 \end{observation}
 \begin{observation}
 Let's remark that in principle we are not interested in all the components of $\lopdt^2$: we want an high-order approximation of the solution in the last node $t^M=t^0+\Delta t$. Despite this, the construction of the operator is strictly based on the approximation of the solution also in the other nodes. 
@@ -439,7 +439,7 @@ Also in this case let's remark that the solution to the operator $\lopdt^1$ woul
 
 
 \section{From an operational perspective}
-All we need to prove is now that the operators $\lopdt^1$ and $\lopdt^2$ fulfil the hypoteses required to apply the Defect Correction. If so we can apply the method \ref{DeC} in this specific context and get
+All we need to prove is now that the operators $\lopdt^1$ and $\lopdt^2$ fulfil the hypoteses required to apply the Deferred Correction. If so we can apply the method \ref{DeC} in this specific context and get
 \begin{equation}
 \label{DeCODE}
 \lopd^1(\underline{\uvec{u}}^{(p)})=\lopd^1(\underline{\uvec{u}}^{(p-1)})-\lopd^2(\underline{\uvec{u}}^{(p-1)}) \quad p=1,2,\dots,P
@@ -510,7 +510,7 @@ In practice we are making an abuse of notation: we are using the notation throug
 \end{observation}
 Now the algorithm is clear and we can focus on the optimal number of iterations to get the highest possible accuracy.
 
-As already anticipated, at least in part, in observation \ref{optimaliterations} the Defect Correction doesn't provide an approximation of the exact solution (in the nodes $t^m$ with $m=1,2,\dots,M$) to our ODEs system but an approximation of the solution to $\lopdt^2$ which is itself a $M+1$-order approximation of the exact solution. And it would be useless to make a "too high" number of iterations to approximate it with an accuracy order higher than $M+1$. To be clearer, if we define the vector
+As already anticipated, at least in part, in observation \ref{optimaliterations} the Deferred Correction doesn't provide an approximation of the exact solution (in the nodes $t^m$ with $m=1,2,\dots,M$) to our ODEs system but an approximation of the solution to $\lopdt^2$ which is itself a $M+1$-order approximation of the exact solution. And it would be useless to make a "too high" number of iterations to approximate it with an accuracy order higher than $M+1$. To be clearer, if we define the vector
 $$\underline{\uvec{u}}^{ex}=\left(
    \begin{array}{ccc}
    \uvec{u}^{ex}(t^M)\\
@@ -520,10 +520,10 @@ $$\underline{\uvec{u}}^{ex}=\left(
    \uvec{u}^{ex}(t^1)
    \end{array}
 \right)$$
-made by the exact solutions to our ODEs system in the nodes $t^m$ $m=1,2,\dots,M$, the Defect Correction doesn't approximate directly it but $\usoldt$ which is the solution to $\lopdt^2$ and it's a $M+1$-order accurate approximation of $\underline{\uvec{u}}^{ex}$ as we can see from the next proposition.
+made by the exact solutions to our ODEs system in the nodes $t^m$ $m=1,2,\dots,M$, the Deferred Correction doesn't approximate directly it but $\usoldt$ which is the solution to $\lopdt^2$ and it's a $M+1$-order accurate approximation of $\underline{\uvec{u}}^{ex}$ as we can see from the next proposition.
 \begin{proposition}
 \label{acc}
-The vector $\underline{\uvec{u}}^{(P)}$ got from the final iteration $P$ of the Defect Correction algorithm \ref{DeCODE} is a $P$-order approximation of $\usoldt$, the solution of the operator $\lopdt^2$.
+The vector $\underline{\uvec{u}}^{(P)}$ got from the final iteration $P$ of the Deferred Correction algorithm \ref{DeCODE} is a $P$-order approximation of $\usoldt$, the solution of the operator $\lopdt^2$.
 \end{proposition}
 \begin{proof}
 From our first abstract accuracy estimate \ref{accuracyestimate} we have in this case
@@ -577,9 +577,9 @@ $$\usoldto-\underline{\uvec{u}}^{(0)}=\begin{pmatrix}
 Remember that the coefficients $\beta^m$ are normalized coefficients that depend just on the distribution of the nodes $t^m$ but not on $\Delta t$ and $\uvec{G}(t^0,\uvec{u}^0)$ is a known constant vector.
 It follows that $\norm{\underline{\uvec{u}}^{(P)}-\usoldt}_\infty=O(\Delta t^{P+1})$ which is the thesis.
 \end{proof}
-Thus we have that $\underline{\uvec{u}}^{(P)}$, resulting from the Defect Correction procedure with $P$ iterations, is a $P$-order accurate approximation of the solution $\usoldt$ to $\lopdt^2$ which is itself a $M+1$-order approximation of the vector $\underline{\uvec{u}}^{ex}$ made by the exact solutions in the nodes $m=1,2,\dots,M$. From this we immediately see that the highest possible accuracy with respect to $\underline{\uvec{u}}^{ex}$ is bounded by $M+1$ and it is reached with a number of iterations at least equal to $M+1$.
+Thus we have that $\underline{\uvec{u}}^{(P)}$, resulting from the Deferred Correction procedure with $P$ iterations, is a $P$-order accurate approximation of the solution $\usoldt$ to $\lopdt^2$ which is itself a $M+1$-order approximation of the vector $\underline{\uvec{u}}^{ex}$ made by the exact solutions in the nodes $m=1,2,\dots,M$. From this we immediately see that the highest possible accuracy with respect to $\underline{\uvec{u}}^{ex}$ is bounded by $M+1$ and it is reached with a number of iterations at least equal to $M+1$.
 \begin{proposition}
-The accuracy of $\underline{\uvec{u}}^{(P)}$, resulting from the Defect Correction procedure with $P$ iterations, with respect to the vector $\underline{\uvec{u}}^{ex}$ of the exact solutions in the nodes $m=1,2,\dots,M$ is $\min \left\lbrace P, M+1 \right\rbrace$.
+The accuracy of $\underline{\uvec{u}}^{(P)}$, resulting from the Deferred Correction procedure with $P$ iterations, with respect to the vector $\underline{\uvec{u}}^{ex}$ of the exact solutions in the nodes $m=1,2,\dots,M$ is $\min \left\lbrace P, M+1 \right\rbrace$.
 \end{proposition}
 \begin{proof}
 Let's consider $\norm{\underline{\uvec{u}}^{(P)}-\underline{\uvec{u}}^{ex}}_\infty$. We add and subtract $\usoldt$, solution of $\lopdt^2$, and use the trianguar inequality, thus we have
@@ -598,9 +598,9 @@ If we increase $P$ we increase the accuracy of $\underline{\uvec{u}}^{(P)}$ with
 \begin{observation}
 Despite the esteem on the accuracy of $\underline{\uvec{u}}^{(P)}$  being uniform with respect to all its components we are just interested in the component associated with the node $M$ becasuse our aim is to have an approximation of the solution to the system of ODEs \ref{ODE} in $t^M=t+\Delta t$. So at the end we take $\uvec{u}^{M,(P)}$ as our desired approximated solution at the time $t+\Delta t$.
 \end{observation}
-Now we can finally prove that the hypoteses on the operators $\lopdt^1$ and $\lopdt^2$ needed to apply the Defect Correction method are fulfilled.
+Now we can finally prove that the hypoteses on the operators $\lopdt^1$ and $\lopdt^2$ needed to apply the Deferred Correction method are fulfilled.
 \section{Proof of the properties on $\lopdt^1$ and $\lopdt^2$}
-Let's recall the hypoteses that are needed to apply the Defect Correction method from the abstract formulation but characterizing them to our case
+Let's recall the hypoteses that are needed to apply the Deferred Correction method from the abstract formulation but characterizing them to our case
 \begin{itemize}
 \item[i)] \textbf{Existence of a solution to $\lopdt^2$} \\
 $\exists ! \usoldt \in \mathbb{R}^{(M \times N)}$ solution of $\lopdt^2$ i.e. such that $\lopdt^2(\usoldt)=\uvec{0}$;
@@ -629,7 +629,7 @@ $$\underline{\uvec{v}}=\left(
    \end{array}
 \right)$$
 with $\uvec{v}^m$ and $\uvec{w}^m$ $m=1,2,\dots,M$ generic $N$-dimensional vectors.
-and prove the other two conditions. As anticipated in the observation \ref{obsnorm}, the sub-coercivity of $\lopdt^1$ will be straightforward instead the Lipschitz-continuity-like condition of $\lopdt^1-\lopdt^2$ will be less trivial (even more delicate in the application of the Defect Correction to the balance laws).
+and prove the other two conditions. As anticipated in the observation \ref{obsnorm}, the sub-coercivity of $\lopdt^1$ will be straightforward instead the Lipschitz-continuity-like condition of $\lopdt^1-\lopdt^2$ will be less trivial (even more delicate in the application of the Deferred Correction to the balance laws).
 \subsection{Sub-coercivity of $\lopdt^1$}
 From a direct computation we have
 $$\lopdt^1(\underline{\uvec{v}})-\lopdt^1(\underline{\uvec{w}}) =             \begin{pmatrix}
@@ -720,7 +720,7 @@ where $C$ is a positive constant depending on the coefficients $\theta^m_l$ and 
 
 
 \chapter{An introduction to balance laws}
-In order to apply the Defect Correction to some numerical methods for solving hyperbolic systems of balance laws, let's introduce the analytical problem. We would like to solve a general hyperbolic system of balance laws
+In order to apply the Deferred Correction to some numerical methods for solving hyperbolic systems of balance laws, let's introduce the analytical problem. We would like to solve a general hyperbolic system of balance laws
 %Too much theory in domains, I have to take omega domain and compact support in the closure
 %Compact support in the closure otherwise we cannot embed DG in the weak problem
 %Omega can also be unbounded because we want to emebed the case Omega=R or R^D which eliminates the BCs
@@ -867,7 +867,7 @@ $$=\int_{\mathbb{R}^D \times \mathbb{R}^+_0} \source\varphi(\uvec{x},t) d\uvec{x
 
 Many other things can be said about weak solutions: it can be shown that a shock (a discontinuity of first kind) in a weak solution must fulfil the Rankine-Hugoniot condition which represents a relation between the "jump" and the "speed"; the weak solutions are in general not unique so we need a criterion to select the ones which have a physical meaning and this is often given by some inequalities, the weak solutions satisfying these inequalities are said "entropy solutions". 
 A deeper analysis is out of the purpose of this document. 
-What we have said so far can seem to be very distant from our initial goal of showing how to apply the Defect Correction to the balance laws but in the author's opinion it was fundamental in order to give a clear idea of the problem that we are trying to solve. Moreover almost all the numerical methods are designed to detect approximations of  weak (eventually entropic) solutions.
+What we have said so far can seem to be very distant from our initial goal of showing how to apply the Deferred Correction to the balance laws but in the author's opinion it was fundamental in order to give a clear idea of the problem that we are trying to solve. Moreover almost all the numerical methods are designed to detect approximations of  weak (eventually entropic) solutions.
 \chapter[Residual Distribution and DG]{The Residual Distribution and Discontinuous Galerkin approaches}
 We will now present the Residual Distribution and Discontinuous Galerkin Finite Elements methods\footnote{We will just present the methods without treating the problem of the convergence of the detected approximated solutions to the desired analytical weak ones.} but first let's introduce in general the semidiscrete formulation and focus on the problem of the inversion of the mass matrix.
 \section{Semidiscrete formulation and mass matrix}
@@ -915,7 +915,7 @@ The Discontinuous Galerkin and the Residual Distribution methods are based on th
 In the Discontinuous Galerkin case the mass matrix is not dependent on time nor on $\uvec{c}(t)$, moreover it is nonsingular, block diagonal and defined positive. Usually in this case the mass matrix is inverted and the resulting system of ODEs
 $$ \frac{d}{dt}\uvec{c}(t)=\massmatrix^{-1}\uvec{H}(t,\uvec{c}(t))$$
 is solved with a classical ODE solver, typically a Runge-Kutta scheme\footnote{To be more specific we also say that a huge variety of ODEs solvers exists and depending on the features we are interested in we can choose particular methods rather than others. For example if we are interested in controlling the total variation of the solution, we can choose a strong stability preserving Runge-Kutta method (SSP-RK). If we are interested in the preservation of the non-negativity of certain variables we can choose a positivity preserving scheme. We do not enter into the detail of such methods.}.
-In the general case the matrix $\massmatrix$ depends on the time $t$ and on the vector $\uvec{c}(t)$ and we don't even know whether it is invertible or not. This is the case for example of the Residual Distribution methods. In such occurrences trying to solve the system as in the Discontinuous Galerkin case would lead to very big problems\footnote{As we said, we have no information about the invertibility of the matrix. Moreover since it depends on $t$ and on $\uvec{c}(t)$, a classical approach would be very likely to require to recompute it and invert it (assuming that this is possible) at each time step.} thus avoiding the inversion of the mass matrix is crucial. Here the Defect Correction comes to aid.
+In the general case the matrix $\massmatrix$ depends on the time $t$ and on the vector $\uvec{c}(t)$ and we don't even know whether it is invertible or not. This is the case for example of the Residual Distribution methods. In such occurrences trying to solve the system as in the Discontinuous Galerkin case would lead to very big problems\footnote{As we said, we have no information about the invertibility of the matrix. Moreover since it depends on $t$ and on $\uvec{c}(t)$, a classical approach would be very likely to require to recompute it and invert it (assuming that this is possible) at each time step.} thus avoiding the inversion of the mass matrix is crucial. Here the Deferred Correction comes to aid.
 \end{observation}
 \begin{observation}
 The Finite Volume methods are characterized by a different approach. The coefficients represent the averages of the approximated solution in some regions of the (discretized) space domain but also in this case we arrive to a semidiscrete formulation like equation \ref{semidiscr}. In this case the mass-matrix is diagonal nonsingular and its entries are the measures of the mentioned regions. Thus in this case the inversion of the mass-matrix is straightforward.
@@ -1095,7 +1095,7 @@ The three steps are represented in figure \ref{RD}.
 \end{figure}
 Up to now the method is very general and also very abstract since we didn't specify how to define the node residuals $\noderes$. The features of the particular Residual Distribution method depend on the choice of the node residuals.
 \begin{observation}
-We have neglected the boundary conditions due to the huge variety of existing ones and the different ways to implement them. We just say that whenever they are not imposed strongly, i.e. fixing the coefficients $\uvec{c}_i(t)$ for the nodes belonging to the boundary, they are usually taken into account by defining some boundary residuals which are added in the balances of the nodes on the boundary. This is for example what is done for the inflow-outflow boundary conditions. Anyway the structure of the Defect Correction applied to the Residual Distribution method as well as the proofs of the properties of the operators $\lopd^1$ and $\lopd^2$ that we will define doesn't change much when we include the boundary conditions.
+We have neglected the boundary conditions due to the huge variety of existing ones and the different ways to implement them. We just say that whenever they are not imposed strongly, i.e. fixing the coefficients $\uvec{c}_i(t)$ for the nodes belonging to the boundary, they are usually taken into account by defining some boundary residuals which are added in the balances of the nodes on the boundary. This is for example what is done for the inflow-outflow boundary conditions. Anyway the structure of the Deferred Correction applied to the Residual Distribution method as well as the proofs of the properties of the operators $\lopd^1$ and $\lopd^2$ that we will define doesn't change much when we include the boundary conditions.
 \end{observation}
 
 \subsection{Some examples of node residuals}
@@ -1147,7 +1147,7 @@ for any $x \in f$;
 \label{nonvar}
 \noderes=\beta^K_i(\uvec{u}_h) \elres \quad t\in [0,T]
 \end{equation}
-where $\beta^K_i(\uvec{u}_h)$ are some coefficients depending on the approximated solution verifying 
+where $\beta^K_i(\uvec{u}_h) \quad K\in \tess \quad \uvec{x}_i \in K$ are some coefficients depending on the approximated solution verifying 
 \begin{equation}
 \label{coefficients}
 \sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)=1 \quad \forall K\in \tess.
@@ -1234,17 +1234,55 @@ $$=\nabla_{\uvec{x}} \left(  \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} 
 We will now go deeper into the details of the method. Let's focus on the balance \ref{nodebalance} that we recall here
 $$\sum_{K \in K_i} \noderes=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 We will write explicitely the equations of this system of ODEs for the mentioned node residuals.
+If we use Lax-Friedrichs, SUPG and Burman node residuals i.e. \ref{Lax-Friedrichs}, \ref{SUPG} and \ref{Burman}, which as already shown can all be written in the form \ref{stabilizedgalerkin}, the balance \ref{nodebalance} at the nodes reads
+$$\uvec{0}=\sum_{K\in K_i} \noderes=\sum_{K\in K_i}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
+$$-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x}+\ST(\uapp)\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+By substituiting $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$ in the previous equation we get
+$$\uvec{0}=\sum_{K\in K_i}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t} \left( \sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}) \right) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
+$$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x})) \varphi_i(\uvec{x}) d\uvec{x}+$$
+$$+\ST(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\Biggr]\quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+We remark that the basis function $\varphi_j$ has support in the union of the elements containing the node $\uvec{x}_j$ to which it is associated so the only basis functions having support in $K$ are the ones corresponding to the nodes belonging to $K$ thus we can write 
+$$\uvec{0}=\sum_{K\in K_i}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t} \left( \sum_{\uvec {x}_j \in K}\uvec{c}_j(t) \varphi_j(\uvec{x}) \right) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
+$$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x})) \varphi_i(\uvec{x}) d\uvec{x}+$$
+$$+\ST(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\Biggr]\quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+Thanks to basic analytic passages the previous nodal balances become
+$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec {x}_j \in K} \left(\int_K \varphi_i(\uvec{x}) \varphi_j(\uvec{x}) d \uvec{x}\right)\frac{\partial}{\partial t} \uvec{c}_j(t)+\sum_{K\in K_i}\Biggl[\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
+$$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x})) \varphi_i(\uvec{x}) d\uvec{x}+$$
+\begin{equation}
+\label{RDGaldiss}
++\ST(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\Biggr]\quad t \in [0,T] \quad \forall \i=1,2,\dots,I.
+\end{equation}
 
 
 
 
+This is the system of ODEs that we get with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals.
+The first term in \ref{RDGaldiss} "generates" the mass matrix $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ which, in this case, is positive defined and thus nonsingular but unfortunately sparse\footnote{This means that we cannot rely on the efficient algorithm designed for band matrices.}.
+If we use insted the non-variational node residuals given by \ref{nonvar} we get
+$$\uvec{0}=\sum_{K\in K_i} \noderes=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h) \elres=$$
+$$=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h)\int_K   \Biggl[  \frac{\partial}{\partial t}\uapp(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uapp(\uvec{x},t))-\mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+Substituiting again $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$ we have
+$$\uvec{0}=\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K   \Biggl[  \frac{\partial}{\partial t} \left(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})\right)+$$
+$$+div_{\uvec{x}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))-\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I$$
+and relying again on the fact that the only basis functions having support in $K$ are the ones corresponding to the nodes belonging to $K$ we get
+$$\uvec{0}=\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K   \Biggl[  \frac{\partial}{\partial t} \left(\sum_{\uvec{x}_j \in K}\uvec{c}_j(t)\varphi_j(\uvec{x})\right)+$$
+$$+div_{\uvec{x}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))-\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
+Thanks to basic manipulations the previous node balances become
+$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec{x}_j \in K}\Biggl[\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K \varphi_j(\uvec{x})d\uvec{x}\Biggr]\frac{\partial}{\partial t}\uvec{c}_j(t)+$$
+$$+\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K \Biggl[div_{\uvec{x}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))+$$
+\begin{equation}
+\label{RDnonvar}
+-\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))   \Biggr] d\uvec{x} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.
+\end{equation}
 
 
-%Example of the system of equations
+
+
+%Example of the system of equations DONE
 
 %BCs -> inflow BCs NO
 
-
+%div therorem
 
 
 
@@ -1282,7 +1320,7 @@ We will write explicitely the equations of this system of ODEs for the mentioned
 Let's make some observations on the derivations of the first three node residuals: Lax-Friedrichs, SUPG and Burman.
 \begin{observation}
 The Residual Distribution schemes that we get by using these residuals are equivalent to a continuous Galerkin FEM scheme with some diffusion to avoid the pathologies of a central scheme.
-We will talk more in detail about the Galerkin finite elements method, or FEM, later in the context of the Dicontinuous Galerkin schemes, but it's better to introduce some concepts now in order to have a clearer understanding of the meaning of the three mentioned node residuals.
+We will talk more in detail about the Galerkin finite elements method, or Galerkin FEM, later in the context of the Dicontinuous Galerkin schemes, but it's better to introduce some concepts now in order to have a clearer understanding of the meaning of the three mentioned node residuals.
 Basically the Galerkin FEM for hyperbolic systems of balance laws consists in a projection of the analytical weak formulation in space over a finite dimensional space. 
 Let's thus derive the weak formulation in space by multiplying our initial equation \ref{sys} by a spatial test function with compact support and integrating in space  
 $$\int_{\Omega} \left(\frac{\partial}{\partial t}\uvec{u}(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uvec{u}(\uvec{x},t))\right)\varphi(\uvec{x}) d\uvec{x} =\int_{\Omega} \mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))\varphi(\uvec{x}) d\uvec{x}  \quad \forall \varphi \in C^1_o(\overline{\Omega}).$$
@@ -1297,24 +1335,37 @@ In particular, given a conformal tessellation $\tess$ made of simplices\footnote
 $$\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}) \quad \forall(\uvec{x},t)\in \overline{\Omega}\times [0,T]$$
 i.e. we assume at any time $t \in [0,T]$ the approximated solution $\uapp$ to belong to the finite dimensional space $(V_h)^N$ with $V_h=span\lbrace \varphi_i\rbrace_{i=1,2,\dots,I}$. The spatial basis functions $\varphi_i$ are very general: they do not have to be mandatorily polynomials or continuous\footnote{If the basis functions are continuous we get a continuous Galerkin FEM, otherwise we get a discontinuous Galerkin FEM.} but since we are trying to show the link between this approach and the Residual Distribution schemes with Lax-Friedrichs, SUPG and Burman node residuals we will consider the same space $V_h$ as the one considered in the Residual Distribution method i.e. the space of continuous, piecewise polynomial functions
 $$V_h=\lbrace g \in C^0(\overline{\Omega}) \quad s.t. \quad g\vert_K \in \mathbb{P}_M \quad \forall K \in \tess\rbrace.$$
-Let's remind that each function $\varphi_i$ is associated to a node $\uvec{x}_i \in \overline{\Omega}$ and has support in the union of the elements of the tessellation containing that node.
-As we anticipated we now project \ref{weakspace} over the finite dimensional space $(V_h)^N$ i.e. we look for $\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}) \quad t\in [0,T]$ s.t.
+Let's remind that each function $\varphi_i$ is associated to a node $\uvec{x}_i \in \overline{\Omega}$ where its value is not $0$ and has support in the union of the elements of the tessellation containing that node.
+As we anticipated we now project \ref{weakspace} over the finite dimensional space $(V_h)^N$ i.e. we look for $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}) \quad t\in [0,T]$ s.t.
 
 $$\int_{\Omega} \varphi(\uvec{x}) \frac{\partial}{\partial t}\uapp(\uvec{x},t)  d\uvec{x}+ \int_{\partial \Omega} \varphi(\uvec{x})\mathbf{F}(\uapp(\uvec{x},t))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
 $$
 - \int_{\Omega} \mathbf{F}(\uapp(\uvec{x},t)) \cdot \nabla_{\uvec{x}} \varphi(\uvec{x}) d\uvec{x}=\int_{\Omega} \mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t))\varphi(\uvec{x},t) d\uvec{x}  \quad \forall \varphi \in V_h.
 $$
 Due to linearity this is equivalent to require
-$$\int_{\Omega} \varphi_r(\uvec{x}) \frac{\partial}{\partial t}\uapp(\uvec{x},t)  d\uvec{x}+ \int_{\partial \Omega} \varphi_r(\uvec{x})\mathbf{F}(\uapp(\uvec{x},t))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+$$\int_{\Omega} \varphi_i(\uvec{x}) \frac{\partial}{\partial t}\uapp(\uvec{x},t)  d\uvec{x}+ \int_{\partial \Omega} \varphi_i(\uvec{x})\mathbf{F}(\uapp(\uvec{x},t))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
 $$
-- \int_{\Omega} \mathbf{F}(\uapp(\uvec{x},t)) \cdot \nabla_{\uvec{x}} \varphi_r(\uvec{x}) d\uvec{x}=\int_{\Omega} \mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t))\varphi_r(\uvec{x},t) d\uvec{x}  \quad \forall r=1,2,\dots,I.
+- \int_{\Omega} \mathbf{F}(\uapp(\uvec{x},t)) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}=\int_{\Omega} \mathbf{S}(\uvec{x},t,\uapp(\uvec{x},t))\varphi_i(\uvec{x},t) d\uvec{x}  \quad \forall i=1,2,\dots,I.
 $$
-If we now substitute $\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x})$ in the previous equation we get
-$$\int_{\Omega} \varphi_r(\uvec{x}) \frac{\partial}{\partial t}\left( \sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x})\right)  d\uvec{x}+ \int_{\partial \Omega} \varphi_r(\uvec{x})\mathbf{F}(\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+If we now substitute $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$ in the previous equation we get
+$$\int_{\Omega} \varphi_i(\uvec{x}) \frac{\partial}{\partial t}\left( \sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})\right)  d\uvec{x}+ \int_{\partial \Omega} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
 $$
-- \int_{\Omega} \mathbf{F}(\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_r(\uvec{x}) d\uvec{x}=\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}))\varphi_r(\uvec{x},t) d\uvec{x}  \quad \forall r=1,2,\dots,I.
+- \int_{\Omega} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}=\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall j=1,2,\dots,I.
 $$
-This is the semidiscrete formulation of the method a system of ODEs characterized by a mass-matrix
+and thus, thanks to basic analytic passages
+$$\sum_{j=1}^I \left(\int_{\Omega} \varphi_i(\uvec{x}) \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial \Omega} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+$$
++ \int_{\Omega} \mathbf{F}(\sum_{j=1}^I\uvec{c}_i(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}=\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
+$$
+
+
+
+This is the semidiscrete formulation of the continuous Galerkin FEM method: a system of ODEs like \ref{semidiscr} characterized by a mass matrix $\massmatrix \in \mathbb{R}^{(I \times N) \times (I \times N)}.$ 
+This mass matrix is defined positive and thus nonsingular but is sparse.
+
+
+
+
 \end{observation}
 
   
@@ -1343,7 +1394,7 @@ This is the semidiscrete formulation of the method a system of ODEs characterize
 
 
 
-\chapter[The Defect Correction in balance laws]{The Defect Correction in balance laws as an explicit time integrator}
+\chapter[The Deferred Correction in balance laws]{The Deferred Correction in balance laws as an explicit time integrator}
 
 
 
