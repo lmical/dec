@@ -102,8 +102,8 @@ Institut für Mathematik\\
 \listoffigures
 
 \chapter{Abstract} 
-This work is an attempt to give a systematic introduction to the Deferred Correction method which provides an iterative procedure to get arbitrary high-order integration schemes for systems of ordinary differential equations.
-We can also apply the Deferred Correction in the context of Residual Distribution and Finite Elements methods for hyperbolic systems of balance laws to get an explicit formulation and avoid the inversion of mass matrices.
+This work is an attempt to give a systematic introduction to the Deferred Correction method\footnote{The method is sometimes referred as Defect Correction.}, or simply DeC, which provides an iterative procedure to get arbitrary high-order integration schemes for systems of ordinary differential equations. The original method has been introduced by Alouk Dutt, Leslie Greengard and Vladimir Rokhlin in their work "Spectral Deferred Correction Methods for Ordinary Differential Equations" published in "BIT Numerical Mathematics", volume 40, pages 241-266 in 2000.
+The Deferred Correction can also be applied in the context of Residual Distribution and Finite Elements methods for hyperbolic systems of balance laws to get an explicit formulation and avoid the inversion of mass matrices. The application of the Deferred Correction method to the Residual Distribution framework is due to Remi Abgrall in "High order schemes for hyperbolic problems using globally continuous approximation and avoiding mass matrices" published in the "Journal of Scientific Computing", volume 73, pages 461–494 in 2017.
 The structure of this script is the following:
 \begin{itemize}
 \item[•] We start by introducing the Deferred Correction as a general method to approximate the solution of a general "tough" operator $\lopd^2$ with an arbitrary high-order precision through an iterative procedure which make use of the operator $\lopd^1$ which is a "naive" operator.
@@ -854,7 +854,12 @@ Equation \ref{weak} is referred as the weak formulation of the system of balance
 \begin{observation}
 In reality the integral over the surface $\partial \Omega \times \mathbb{R}^+_0$ (and so the boundary conditions) would require more rigorous specifications under an analytic point of view. More in general we admit that a more formal position of the problem is possible in the context of the distributions i.e. linear and continuous (w.r.t. a certain notion of convergence) operators over a space of test functions but it is out of the purpose of this document.
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%REFERENCE TO ERN and TO ALBERT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \end{observation}
 A weak solution is a function $\uvec{u}:\overline{\Omega} \times \mathbb{R}^+_0 \rightarrow \mathbb{R}^N$ satisfying the integral relation \ref{weak} for any arbitrary test function $\varphi \in C^1_o(\overline{\Omega} \times \mathbb{R}^+_0)$.
@@ -947,7 +952,7 @@ $$
 $$
 Again we remark that now $\Omega$ is a bounded domain with smooth-enough boundary $\partial \Omega$.
 Some suitable initial and boundary conditions are assumed.
-We consider a tessellation $\tess$ of the closure of the spatial domain i.e. a finite family of $D$-dimensional nonoverlapping polytopal subsets $K$ of $\overline{\Omega}$ which cover it exactly\footnote{Again we remind the assumption that the analytical and the discretized spatial domain coincide. The elements of the tessellation cover $\overline{\Omega}$ exactly without any approximation.} with characteristic length $h$, i.e. such that
+We consider a tessellation $\tess$ of the closure of the spatial domain i.e. a finite family of $D$-dimensional nonoverlapping convex polytopal subsets $K$ of $\overline{\Omega}$ which cover it exactly\footnote{Again we remind the assumption that the analytical and the discretized spatial domain coincide. The elements of the tessellation cover $\overline{\Omega}$ exactly without any approximation.} with characteristic length $h$, i.e. such that
 \begin{itemize}
 \item[•] $\mathring{K} \neq \emptyset \quad \forall K \in \tess$
 \item[•] $\mathring{K_i} \cap \mathring{K_j}=\emptyset \quad \forall K_i, K_j \in \tess \quad s.t. \quad K_i \neq K_j;$
@@ -956,7 +961,10 @@ We consider a tessellation $\tess$ of the closure of the spatial domain i.e. a f
 \end{itemize}
 \begin{observation}
 The shape of the sets of the tessellation cannot be chosen arbitrarily, there are some regularity requirements that must be satisfied but we do not treat them in detail.
-%Reference to quarteroni
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%Reference to Quarteroni
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{observation}
 The tessellation $\tess$ is often called "triangulation" and its elements are ususally referred as "cells".
 Usually but not mandatorily the polytopes of the tessellation are simplices. In figure \ref{simplices} are represented the simplices in one, two and three dimensions.
@@ -1025,9 +1033,6 @@ $$\uapp(\uvec{x}_j,t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}_j)=\sum_{i=1}^
 This is in general not true for other choices of the basis, for example for the Bernstein polynomials.
 \end{observation}
 Now we have all the elements that we need to go into the details of the Residual Distribution approach.
-
-
-%RD
 
 Basically the Residual Distribution can be summarised into three steps:
 \begin{itemize}
@@ -1137,11 +1142,11 @@ $$+h_K \int_K \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec
 where $h_K$ is a constant depending on the cell $K$ and $\tau\in \mathbb{R}^+$ is a positive parameter;
 
 
-\item[•] \textbf{Burman}\\
+\item[•] \textbf{CIP}\footnote{The name "CIP" stays for "continuous interior penalty" and is due to the fact that the Residual Distribution method that we get using these node residuals is equivalent to a stabilized continuous Galerkin FEM with stabilization term based on the Interior Penalty Procedure introduced by Jim Douglas Jr. and Todd Dupont in their work "Interior Penalty Procedures for Elliptic and Parabolic Galerkin Methods" presented at the "Second International Symposium on Computing Methods in Applied Sciences and Engineering", held between December 15 and December 19 in 1975 organised by IRIA-LABORIA and then published in "Computing Methods in Applied Sciences", Springer-Verlag, Berlin, 1976, which contains part of the lectures which were presented during the mentioned conference. These node residuals are sometimes referred as Burman residuals because Erik Burman and Peter Hansbo, in their work "Edge stabilization for Galerkin approximations of convection-diffusion–reaction problems" published in 2004 in "Computer methods in applied mechanics and engineering", recalled the stabilization procedure introduced by Douglas and Dupon.}\\
 $$\noderes=\int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+$$
 $$+\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x})  d\sigma(\uvec{x})+$$
 \begin{equation}
-\label{Burman}
+\label{CIP}
 -\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x} \quad t\in [0,T]
 \end{equation}
 where $f$ is a generic $D-1$-dimensional face of the generic element $K$, $\theta\in \mathbb{R^+}$ is a positive parameter, $h_f$ is a constant depending on the face $f$, $[\![ \cdot ]\!]$ represents the jump of the argument across $f$ i.e.
@@ -1161,6 +1166,9 @@ where $\beta^K_i(\uvec{u}_h) \quad K\in \tess \quad \uvec{x}_i \in K$ are some c
 \sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)=1 \quad \forall K\in \tess.
 \end{equation}
 \end{itemize}
+\begin{observation}
+Due to the continuity of the basis functions $\varphi_i$ we have a continuous approximation of the solution. For this reason no numerical flux is needed for the evaluation of the flux in the boundary integrals contrarily to what happens in the Discontinuous Galerkin case. 
+\end{observation}
 Let's verify that the conservation relation \ref{conservation} holds for all these types of node residuals.
 For what concerns the last type of node residuals this follows trivially from the condition \ref{coefficients} imposed on the coefficients $\beta^K_i(\uvec{u}_h)$ in fact
 $$\sum_{\uvec{x}_i \in K}\noderes=\sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)\elres=\left(\sum_{\uvec{x}_i \in K}\beta^K_i(\uvec{u}_h)\right)\elres=\elres.$$
@@ -1169,7 +1177,7 @@ For the other node residuals let's refer to the next property.
 
 
 \begin{proposition}
-The node residuals Lax-Friedrichs, SUPG and Burman given respectively in equations \ref{Lax-Friedrichs}, \ref{SUPG} and \ref{Burman} fulfil the conservation relation \ref{conservation}.
+The node residuals Lax-Friedrichs, SUPG and CIP given respectively in equations \ref{Lax-Friedrichs}, \ref{SUPG} and \ref{CIP} fulfil the conservation relation \ref{conservation}.
 \end{proposition}
 \begin{proof}
 For all of them it follows from the normalization \ref{normalization} that we have made on the test functions which is recalled here
@@ -1187,7 +1195,7 @@ We have
 $$\ST(\uapp)=\alpha_K(\uvec{u}_h)\left(\uvec{c}_i(t)-\overline{\uvec{c}}_K(t) \right) \quad t\in [0,T];$$
 \item[•] \textbf{SUPG}
 $$\ST(\uapp)=h_K \int_K \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\varphi_i(\uvec{x})\right] \tau \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\uvec{u}_h(\uvec{x},t)\right]d\uvec{x} \quad t\in [0,T];$$
-\item[•] \textbf{Burman}
+\item[•] \textbf{CIP}
 $$\ST(\uapp)=\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!]  \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x}) d\sigma(\uvec{x})\quad t\in [0,T].$$
 
 \end{itemize}
@@ -1227,7 +1235,7 @@ because of the definition of the average $\overline{\uvec{c}}_K(t)=\frac{1}{\#\l
 $$\sum_{\uvec{x}_i \in K}\ST(\uapp)=\sum_{\uvec{x}_i \in K}h_K \int_K \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\varphi_i(\uvec{x})\right] \tau \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\uvec{u}_h(\uvec{x},t)\right]d\uvec{x}=$$
 $$h_K \int_K \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\left(\sum_{\uvec{x}_i \in K}\varphi_i(\uvec{x})\right)\right] \tau \left[\frac{\partial \uvec{F}}{\partial \uvec{u}}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}}\uvec{u}_h(\uvec{x},t)\right]d\uvec{x}\equiv\uvec{0}\quad \forall t\in [0,T]$$
 because $\sum_{\uvec{x}_i \in K}  \varphi_i(\uvec{x}) \equiv 1\quad \forall x \in K$ and so its gradient is identically $0$ in $K$ as we observed in \ref{gradient};
-\item[•] \textbf{Burman}
+\item[•] \textbf{CIP}
 $$\sum_{\uvec{x}_i \in K}\ST(\uapp)=\sum_{\uvec{x}_i \in K}\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \varphi_i\vert_K(\uvec{x}) d\sigma(\uvec{x})=$$
 $$=\sum_{f\subset\partial{K}}\theta h_f^2\int_f [\![ \nabla_{\uvec{x}} \uvec{u}_h(\uvec{x},t) ]\!] \cdot \nabla_{\uvec{x}} \left( \sum_{\uvec{x}_i \in K}\varphi_i\vert_K(\uvec{x})\right) d\sigma(\uvec{x})\equiv\uvec{0}\quad \forall t\in [0,T]$$
 again because of \ref{gradient} since we are considering the limit at the boundary of the restriction to $K$ of the gradient of the function $\sum_{\uvec{x}_i \in K}  \varphi_i(\uvec{x})$ which is constant in $K$ and so
@@ -1240,7 +1248,7 @@ $$=\nabla_{\uvec{x}} \left(  \lim\limits_{\substack{\uvec{y}\rightarrow\uvec{x} 
 We will now go deeper into the details of the method. Let's focus on the balance \ref{nodebalance} that we recall here
 $$\sum_{K \in K_i} \noderes=\uvec{0} \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 We will write explicitely the equations of this system of ODEs for the mentioned node residuals.
-If we use Lax-Friedrichs, SUPG and Burman node residuals i.e. \ref{Lax-Friedrichs}, \ref{SUPG} and \ref{Burman}, which as already shown can all be written in the form \ref{stabilizedgalerkin}, the balance \ref{nodebalance} at the nodes reads
+If we use Lax-Friedrichs, SUPG and CIP node residuals i.e. \ref{Lax-Friedrichs}, \ref{SUPG} and \ref{CIP}, which as already shown can all be written in the form \ref{stabilizedgalerkin}, the balance \ref{nodebalance} at the nodes reads
 $$\uvec{0}=\sum_{K\in K_i} \noderes=\sum_{K\in K_i}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\partial t}\uvec{u}_h(\uvec{x},t) d \uvec{x}+\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
 $$-\int_K \uvec{F}(\uvec{u}_h(\uvec{x},t))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\uvec{u}_h(\uvec{x},t)) \varphi_i(\uvec{x}) d\uvec{x}+\ST(\uapp)\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 By substituiting $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$ in the previous equation we get
@@ -1252,7 +1260,7 @@ $$\uvec{0}=\sum_{K\in K_i}\Biggl[ \int_K \varphi_i(\uvec{x})\frac{\partial}{\par
 $$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x})) \varphi_i(\uvec{x}) d\uvec{x}+$$
 $$+\ST(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\Biggr]\quad t \in [0,T] \quad \forall \i=1,2,\dots,I.$$
 Thanks to basic analytic passages the previous nodal balances become
-$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec {x}_j \in K} \left(\int_K \varphi_i(\uvec{x}) \varphi_j(\uvec{x}) d \uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)+\sum_{K\in K_i}\Biggl[\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
+$$\sum_{K\in K_i}\sum_{\uvec {x}_j \in K} \left(\int_K \varphi_i(\uvec{x}) \varphi_j(\uvec{x}) d \uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=-\sum_{K\in K_i}\Biggl[\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x})+$$
 $$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}-\int_K \uvec{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x})) \varphi_i(\uvec{x}) d\uvec{x}+$$
 \begin{equation}
 \label{RDGaldiss}
@@ -1262,7 +1270,10 @@ $$-\int_K \uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \nabla_{\
 
 
 
-This is the system of ODEs that we get with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals. We remind that the stabilization terms $\ST$ depend on the particular node residuals chosen. The first term in \ref{RDGaldiss} "generates" the mass matrix $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ which, in this case, is positive defined and thus nonsingular but unfortunately sparse\footnote{This means that we cannot rely on the efficient algorithm designed for band matrices.}.
+This is the system of ODEs that we get with the Residual Distribution method and Lax-Friedrichs, SUPG and CIP node residuals. We remind that the stabilization terms $\ST$ depend on the particular node residuals chosen. The term at the left hand side of \ref{RDGaldiss} "generates" the mass matrix $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ which, in this case, is positive defined and thus nonsingular but unfortunately sparse\footnote{This means that we cannot rely on the efficient algorithms designed for band matrices as we can do instead in Discontinuous Galerkin FEM.}.
+\begin{observation}
+We remark that since we have a continuous approximation of the solution thanks to the continuous basis functions $\varphi_i$, we do not need a numerical flux for the evaluation of the flux in the boundary integrals of \ref{RDGaldiss}. The flux is a continuous function depending on the continuous appproximated solution.
+\end{observation}
 If we use insted the non-variational node residuals given by \ref{nonvar} we get
 $$\uvec{0}=\sum_{K\in K_i} \noderes=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h) \elres=$$
 $$=\sum_{K\in K_i}\beta^K_i(\uvec{u}_h)\Biggl[ \int_K   \frac{\partial}{\partial t}\uapp(\uvec{x},t)d\uvec{x}+\int_{\partial{K}} \mathbf{F}(\uapp(\uvec{x},t))\cdot\nu d\sigma(\uvec{x})+$$
@@ -1274,30 +1285,20 @@ and relying again on the fact that the only basis functions having support in $K
 $$\uvec{0}=\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\Biggl[\int_K     \frac{\partial}{\partial t} \left(\sum_{\uvec{x}_j\in K}\uvec{c}_j(t)\varphi_j(\uvec{x})\right)d \uvec{x}+$$
 $$+   \int_{\partial{K}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\nu d\sigma(\uvec{x})-\int_K\mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) d\uvec{x}\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I$$
 Thanks to basic manipulations the previous node balances become
-$$\uvec{0}=\sum_{K\in K_i}\sum_{\uvec{x}_j \in K}\Biggl[\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K \varphi_j(\uvec{x})d\uvec{x}\Biggr]\frac{d}{d t}\uvec{c}_j(t)+$$
-$$+\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\Biggl[\int_{\partial{K}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\nu d\sigma(\uvec{x})+$$
+$$\sum_{K\in K_i}\sum_{\uvec{x}_j \in K}\Biggl[\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\int_K \varphi_j(\uvec{x})d\uvec{x}\Biggr]\frac{d}{d t}\uvec{c}_j(t)=$$
+$$=-\sum_{K\in K_i}\beta^K_i(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\Biggl[\int_{\partial{K}} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\nu d\sigma(\uvec{x})+$$
 \begin{equation}
 \label{RDnonvar}
 -\int_K \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))    d\uvec{x}\Biggr] \quad t \in [0,T] \quad \forall \i=1,2,\dots,I.
 \end{equation}
 This is the system of ODEs that we get with the Residual Distribution method and non-variational node residuals.
-Also in this case the mass matrix is given by the first term of the balance equation. In this case we do not even know if it is invertible or not and as, the reader may immediately notice, it depends on the coefficients $\uvec{c}_i(t)$ through the coefficients $\beta^K_i$ which take as argument the approximated solution $\uapp=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$.
+Also in this case the mass matrix is given by the term at the left hand side of the balance equation. In this case we do not even know if it is invertible or not and as, the reader may immediately notice, it depends on the coefficients $\uvec{c}_i(t)$ through the coefficients $\beta^K_i$ which take as argument the approximated solution $\uapp=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})$.
 If in the first case avoiding to invert the mass matrix is just a matter of computational efficiency, now it is a must: even if we assume that it is nonsingular (which is not guaranteed), a traditional approach involving the inversion would imply at each time step to recompute (and invert) the mass matrix resulting in prohibitive computational times.
 
+\section{Equivalece between the Residual Distribution with Lax-Friedrichs, SUPG and CIP node residuals and stabilized continuous FEM.}
 
 
-%Example of the system of equations DONE
-
-%BCs -> inflow BCs NO
-
-%div therorem DONE
-
-
-
-\section{On the derivation of Lax-Friedrichs, SUPG and Burman node residuals}
-
-
-Let's make some observations on the derivations of the first three node residuals: Lax-Friedrichs, SUPG and Burman.
+Let's make some observations on the derivations of the first three node residuals: Lax-Friedrichs, SUPG and CIP.
 The Residual Distribution schemes that we get by using these residuals are equivalent to a continuous Galerkin FEM scheme with some diffusion to avoid the pathologies of a central scheme.
 We will talk more in detail about the Galerkin finite elements method, or Galerkin FEM, later in the context of the Dicontinuous Galerkin schemes, but it's better to introduce some concepts now in order to have a clearer understanding of the meaning of the three mentioned node residuals.
 Basically the Galerkin FEM for hyperbolic systems of balance laws consists in a projection of the analytical weak formulation in space over a finite dimensional space. 
@@ -1312,7 +1313,7 @@ $$\int_{\Omega} \varphi(\uvec{x}) \frac{\partial}{\partial t}\uvec{u}(\uvec{x},t
 which is the weak formulation only in space. Now, according to the Galerkin FEM phylosophy, we project \ref{weakspace} over the finite dimensional subspace $(V_h)^N$.
 In particular, given a conformal tessellation $\tess$ made of simplices\footnote{Again we remark that this assumption is just meant to make things easier but it is not mandatory.}, we adopt the usual discretization for the approximated solution
 $$\uapp(\uvec{x},t)=\sum_{i=1}^I\uvec{c}_i(t)\varphi_i(\uvec{x}) \quad \forall(\uvec{x},t)\in \overline{\Omega}\times [0,T]$$
-i.e. we assume at any time $t \in [0,T]$ the approximated solution $\uapp$ to belong to the finite dimensional space $(V_h)^N$ with $V_h=span\lbrace \varphi_i\rbrace_{i=1,2,\dots,I}$. The spatial basis functions $\varphi_i$ are very general: they do not have to be mandatorily polynomials or continuous\footnote{If the basis functions are continuous we get a continuous Galerkin FEM, otherwise we get a discontinuous Galerkin FEM.} but since we are trying to show the link between this approach and the Residual Distribution schemes with Lax-Friedrichs, SUPG and Burman node residuals we will consider the same space $V_h$ as the one considered in the Residual Distribution method i.e. the space of continuous, piecewise polynomial functions
+i.e. we assume at any time $t \in [0,T]$ the approximated solution $\uapp$ to belong to the finite dimensional space $(V_h)^N$ with $V_h=span\lbrace \varphi_i\rbrace_{i=1,2,\dots,I}$. The spatial basis functions $\varphi_i$ are very general: they do not have to be mandatorily polynomials or continuous\footnote{If the basis functions are continuous we get a continuous Galerkin FEM, otherwise we get a discontinuous Galerkin FEM. Let's remind that when we deal with discontinuous approximations of the solution a numerical flux is needed when we have to evluate the flux in the boundary integrals.} but since we are trying to show the link between this approach and the Residual Distribution schemes with Lax-Friedrichs, SUPG and CIP node residuals we will consider the same space $V_h$ as the one considered in the Residual Distribution method i.e. the space of continuous, piecewise polynomial functions
 $$V_h=\lbrace g \in C^0(\overline{\Omega}) \quad s.t. \quad g\vert_K \in \mathbb{P}_M \quad \forall K \in \tess\rbrace.$$
 Let's remind that each function $\varphi_i$ is associated to a node $\uvec{x}_i \in \overline{\Omega}$ where its value is not $0$ and has support in the union of the elements of the tessellation containing that node.
 Therefore as we anticipated we project \ref{weakspace} over the finite dimensional space $(V_h)^N$ i.e. we look for $\uapp(\uvec{x},t)=\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}) \quad t\in [0,T]$ s.t.
@@ -1337,13 +1338,79 @@ $$
 + \int_{\Omega} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\int_{\Omega} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
 $$
 This is the semidiscrete formulation of the continuous Galerkin FEM method: a system of ODEs like \ref{semidiscr} characterized by a mass matrix $\massmatrix \in \mathbb{R}^{(I \times N) \times (I \times N)}$ positive defined but sparse. 
-We will now show that this system of ODEs is equivalent to the one in \ref{RDGaldiss} i.e. the system got with the Residual Distribution method and Lax-Friedrichs, SUPG and Burman node residuals up to the presence of the stabilization terms.
+We will now show that this system of ODEs is equivalent to the one in \ref{RDGaldiss} i.e. the system got with the Residual Distribution method and Lax-Friedrichs, SUPG and CIP node residuals up to the presence of the stabilization terms.
+Since the basis function $\varphi_i$ has support in the union of elements containing the node $\uvec{x}_i$ to which it is associated, i.e. it is not identically zero just in the elements $K\in K_i$, we can consider in place of the integral over $\Omega$ the integral over $\cup_{K \in K_i} K$ and get
+$$\sum_{j=1}^I \left(\int_{\cup_{K \in K_i}K} \varphi_i(\uvec{x}) \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial (\cup_{K \in K_i}K)} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+$$
++ \int_{\cup_{K \in K_i}K} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\int_{\cup_{K \in K_i}K} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
+$$
+which is equivalent to say
+$$\sum_{j=1}^I \left(\sum_{K \in K_i} \int_{K} \varphi_i(\uvec{x}) \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial (\cup_{K \in K_i}K)} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+$$
++ \sum_{K \in K_i} \int_{K} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\sum_{K \in K_i}\int_{K} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
+$$
+Since we are dealing with finite sums it is possible to interchange the sums over the elements and over all the nodes at the left hand side and enter the sum over all the nodes into the integral
+$$\sum_{K \in K_i} \left(\int_{K} \varphi_i(\uvec{x}) \sum_{j=1}^I \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial (\cup_{K \in K_i}K)} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+$$
++ \sum_{K \in K_i} \int_{K} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\sum_{K \in K_i}\int_{K} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I.
+$$  
+Now, thanks to the usual argument that only the basis functions associated to the degrees of freedom in $K$ are nonzero in $K$ we can write 
+$$\sum_{K \in K_i} \left(\int_{K} \varphi_i(\uvec{x}) \sum_{\uvec{x}_j\in K} \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial (\cup_{K \in K_i}K)} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+$$
++ \sum_{K \in K_i} \int_{K} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+\sum_{K \in K_i}\int_{K} \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}  \quad \forall i=1,2,\dots,I
+$$
+and get
+$$\sum_{K \in K_i} \sum_{\uvec{x}_j\in K} \left(\int_{K} \varphi_i(\uvec{x})  \varphi_j(\uvec{x})  d\uvec{x}\right)\frac{d}{d t} \uvec{c}_j(t)=- \int_{\partial (\cup_{K \in K_i}K)} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})+$$
+$$
++ \sum_{K \in K_i} \Bigl[ \int_{K} \mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x})) \cdot \nabla_{\uvec{x}} \varphi_i(\uvec{x}) d\uvec{x}+ \mathbf{S}(\uvec{x},t,\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\varphi_i(\uvec{x}) d\uvec{x}\Bigr]  \quad \forall i=1,2,\dots,I.
+$$
+In order to identify this system of equations corresponding to the semidiscrete formulation of the continuous Galerkin FEM with the one in \ref{RDGaldiss} corresponding to the semidiscrete formulation of the Residual Distribution method with Lax-Friedrichs, SUPG and CIP node residuals (up to the presence of the stabilization terms) we only need to show that
+$$\int_{\partial (\cup_{K \in K_i}K)} \varphi_i(\uvec{x})\mathbf{F}(\sum_{j=1}^I\uvec{c}_j(t)\varphi_j(\uvec{x}))\cdot\uvec{\nu}d\sigma(\uvec{x})=\sum_{K \in K_i}\int_{\partial{K}} \varphi_i(\uvec{x})\uvec{F}(\sum_{j=1}^I\uvec{c}_j(t) \varphi_j(\uvec{x}))\cdot \uvec{\nu} d\sigma(\uvec{x}).$$
+In order to do this let's observe that the quantities inside the integrals are the same. Thus we have to identify the differences in the sets over which they are integrated. 
+If only one element $K$ contains $\uvec{x}_i$ the equality holds trivially because we would have on both sides the integral over the boundary $\partial K$ of that single element.
+Let's focus on the more complicated case in which $\uvec{x}_i$ belongs to more than one element.
+For a clearer view of what we are going to say let's refer to the figure \ref{DoFfaces} in which a bidimensional example is shown, the arguments are the same for any arbitrary $D$ number of dimensions. 
+
+\begin{figure}[hp] \centering{\includegraphics[scale=0.6]{DoFfaces.pdf}}
+\caption{A focus on the boundaries of $\cup_{K \in K_i}K$ and $K \in K_i$.}
+\label{DoFfaces}
+\end{figure}
 
 
-
-
-
+Let's first focus on the left hand side of the equality.
+The set $\cup_{K \in K_i}K$ is a $D$-dimensional polytope resulting from the union of all the $D$-dimensional elements $K$ containing $\uvec{x}_i$. 
+Under the assumption of conformal tessellation, its boundary $\partial (\cup_{K \in K_i}K)$ is made by the faces of the elements $K \in K_i$ which do not contain $\uvec{x}_i$. This is basically due to the two facts: 
+\begin{itemize}
+\item[•] the node $\uvec{x}_i$ is internal to $\cup_{K \in K_i}K$ and if a face of $K \in K_i$ contains $\uvec{x}_i$ it means that it is internal to $\cup_{K \in K_i}K$, 
+\item[•] the elements of the tessellation are convex.
+\end{itemize}
+The faces of the elements $K \in K_i$ which do not contain $\uvec{x}_i$ (whose union is $\partial (\cup_{K \in K_i}K)$) are in particular the faces of the elements $K \in K_i$ which are not shared with other elements in $K_i$. This comes as well from the convexity of the elements of the tessellation.
+In figure \ref{DoFfaces} three nodes are put in evidence with different colors: red, yellow and green. The elements $K$ of the corresponding $K_i$ are coloured with the same colour but with a lighter shade. The boundaries of the sets $\partial (\cup_{K \in K_i}K)$ are in black. 
   
+Let's now focus on the right hand side.
+We are integrating now over all the faces of $K$ for each $K\in K_i$. The faces composing $\partial (\cup_{K \in K_i}K)$ are indeed counted among them but we are now considering also the faces containing $\uvec{x}_i$. These are the faces shared between different elements $K \in K_i$. Due to the hypotesis of conformal tessellation each face is shared at most by two elements so in this case they are shared exactly by two simplices $K \in K_i$. So each of these shared faces is counted twice because we are considering the sum over all the elements $K$ of $K_i$. In these two evaluations of the integral over the considered shared face we have opposite signs of the normal $\nu$ which is always outward pointing with respect to the considered element. This means that the two contributions cancel each other and this is equivalent to consider just the nonshared faces of the elements of $K_i$ (which are obviously counted once).
+In figure \ref{DoFfaces} the shared (1-dimensional) faces of the elements $K \in K_i$ are of the same colour of the relative node $\uvec{x}_i$. Obviously we have no shared faces in the naive case of the green node which belongs only to one element.
+We thus have that the equality is true and that the Residual Distribution method with Lax-Friedrichs, SUPG and CIP node residuals is equivalent to the continuous Galerkin FEM up to the presence of the stabilization terms. 
+In the context of these methods the stabilization terms are in general added to avoid  the instabilities of the central schemes leading to the so-called "stabilized" methods\footnote{The stabilization term is usually added a priori in the weak formulation in space before the projection over a finite dimensional space through which we get the numerical method and not directly in the numerical method. This is done in order to derive some existence, regularity or stability results at the analytical level before passing to the numerical framework.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Jim Douglas, Jr. , and Todd Dupont
+%Interior Penalty Procedures for Elliptic and Parabolic Galerkin Methods
+%Computing Methods in Applied Sciences, Springer-Verlag, Berlin, 1976}.
+%Chapter 6-pag 207
+
+%Then riproposed (copied) by
+%Erik Burman and Peter Hansbo
+%Edge stabilization for Galerkin approximations of convection–diffusion–reaction problems
+%Methods in Applied Mechanics and Engineering 193 (2004) 1437–1453  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We can conclude that the Residual Distribution method with Lax-Friedrichs, SUPG and CIP node residuals is equivalent to the stabilized continuous Galerkin FEM.
+\section{A little reference on the derivation of the stabilization term for the CIP nodal residuals}
+
+The name "CIP" stays for "continuous interior penalty" and is due to the fact that the Residual Distribution method that we get using these node residuals is equivalent to a stabilized continuous Galerkin FEM with stabilization term based on the Interior Penalty Procedure introduced by Jim Douglas Jr. and Todd Dupont in their work "Interior Penalty Procedures for Elliptic and Parabolic Galerkin Methods" presented at the "Second International Symposium on Computing Methods in Applied Sciences and Engineering", held between December 15 and December 19 in 1975 organised by IRIA-LABORIA and then published in "Computing Methods in Applied Sciences", Springer-Verlag, Berlin, 1976, which contains part of the lectures which were presented during the mentioned conference. These node residuals are sometimes referred as Burman residuals because Erik Burman and Peter Hansbo, in their work "Edge stabilization for Galerkin approximations of convection-diffusion–reaction problems" published in 2004 in "Computer methods in applied mechanics and engineering", recalled the stabilization procedure introduced by Douglas and Dupon.
+
+
 %Derivation of the first three 
 %Galerkin with stabilization term STILL
 
@@ -1369,8 +1436,13 @@ We will now show that this system of ODEs is equivalent to the one in \ref{RDGal
 
 
 
-\chapter[The Deferred Correction in balance laws]{The Deferred Correction in balance laws as an explicit time integrator}
+\chapter{The Deferred Correction in Residual Distribution}
 
+\chapter{The Discontinuous Galerkin Finite Elements method}
+
+\chapter{The Deferred Correction in Discontinuous Galerkin}
+
+\chapter{The Deferred Correction as a Runge-Kutta scheme}
 
 
 
