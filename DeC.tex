@@ -727,14 +727,17 @@ $$\norm{\left[\lopdt^1(\underline{\uvec{v}})-\lopdt^2(\underline{\uvec{v}})\righ
         \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l)
         \end{pmatrix}}_\infty = \Delta t C \sum_{l=0}^{M} \norm{\uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l)}_{\infty, N} \leq$$ 
         $$\leq \Delta t C \sum_{l=0}^{M} L \norm{\uvec{v}^l-\uvec{w}^l}_{\infty, N} \leq \Delta t C L M\norm{\underline{\uvec{v}}-\underline{\uvec{w}}}_\infty$$
-where $C$ is a positive constant depending on the coefficients $\theta^m_l$ and not on $\Delta t$. This proves the Lipschitz-continuity-like condition of $\lopdt^1-\lopdt^2$. For more clarity we underline that the infinity norm $\norm{\cdot}_{\infty,N}$ is applied to $N$-dimensional vectors (and not to $M\times N$-dimensional vectors like $\norm{\cdot}_\infty$).
-
+where $C$ is a positive constant depending on the coefficients $\theta^m_l$ and not on $\Delta t$. The last inequality follows from the fact that $\underline{\uvec{v}}-\underline{\uvec{w}}$ contains as components all the vectors $\uvec{v}^l-\uvec{w}^l$ and thus
+$$\norm{\uvec{v}^l-\uvec{w}^l}_{\infty, N} \leq\norm{\underline{\uvec{v}}-\underline{\uvec{w}}}_\infty.$$
+This proves the Lipschitz-continuity-like condition of $\lopdt^1-\lopdt^2$.For more clarity we underline that the infinity norm $\norm{\cdot}_{\infty,N}$ is applied to $N$-dimensional vectors (and not to $(M\times N)$-dimensional vectors like $\norm{\cdot}_\infty$).
+This completes the analysis of the Deferred Correction applied to the context of the systems of ordinary differential equations.
+In the following we will see how to apply it to some numerical methods for hyperbolic systems of balance laws.
 
 
 
 
 \chapter{An introduction to balance laws}
-In order to apply the Deferred Correction to some numerical methods for solving hyperbolic systems of balance laws, let's introduce the analytical problem. We would like to solve a general hyperbolic system of balance laws
+In order to apply the Deferred Correction to some numerical methods for solving hyperbolic systems of balance laws, let's introduce the analytical problem. We would like to solve the general system 
 %Too much theory in domains, I have to take omega domain and compact support in the closure
 %Compact support in the closure otherwise we cannot embed DG in the weak problem
 %Omega can also be unbounded because we want to emebed the case Omega=R or R^D which eliminates the BCs
@@ -745,36 +748,35 @@ In order to apply the Deferred Correction to some numerical methods for solving 
 
 
 
-
-
-
 \begin{equation}
 \label{sys}
 \frac{\partial}{\partial t}\uvec{u}(\uvec{x},t)+div_{\uvec{x}} \mathbf{F}(\uvec{u}(\uvec{x},t))=\mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t)) \quad (\uvec{x},t) \in \Omega\times \mathbb{R}^+_0
 \end{equation}
+
 with some suitable initial condition $\uvec{u}(\uvec{x},0)=\uvec{u}_0(\uvec{x})$ on $\Omega$ and boundary conditions on $\partial \Omega$.
-We have that
+
+The system \ref{sys} is a vectorial partial differential equation i.e. a set of coupled scalar partial differential equations and we have that
 \begin{itemize}
 \item[•] $\Omega\subseteq \mathbb{R}^D$ is the spatial domain which is assumed to be a connected open set with dimension $D \in \mathbb{N}$ and its boundary $\partial \Omega$ is assumed to be smooth-enough; 
 
-\item[•] $\uvec{u}:\overline{\Omega} \times \mathbb{R}^+_0 \rightarrow  \mathbb{R}^N$ is the unknown solution with $N \in \mathbb{N}$ number of scalar equations\footnote{Under a physical point of view, it can happen that not all the states of the space $\mathbb{R}^N$ are admissible for a solution $\uvec{u}$ to a system of balance laws. This limitation comes often with a physical explaination: for example if we consider the Euler equation we have that the density and the pressure have to be positive. This results in a restriction on the space of the possible values that can be assumed from the vector $\uvec{u}$ if we set physical initial and boundary conditions.};
+\item[•] $\uvec{u}:\overline{\Omega} \times \mathbb{R}^+_0 \rightarrow  \mathbb{R}^N$ is the unknown solution with $N \in \mathbb{N}$ number of scalar equations of the system;
 \item[•] $\mathbf{F}:\mathbb{R}^N \rightarrow \mathbb{R}^N \times \mathbb{R}^D$ is the flux;
-\item[•] $\mathbf{S}:\overline{\Omega} \times \mathbb{R}^+_0 \times \mathbb{R}^N \rightarrow \mathbb{R}^N \times \mathbb{R}^D$ is the source (or sink) term;
-\item[•] $\uvec{u}_0:\overline{\Omega} \rightarrow \mathbb{R}^N$ is the known initial condition.
+\item[•] $\mathbf{S}:\overline{\Omega} \times \mathbb{R}^+_0 \times \mathbb{R}^N \rightarrow \mathbb{R}^N$ is the source (or sink) term;
+\item[•] $\uvec{u}_0:\Omega \rightarrow \mathbb{R}^N$ is the known initial condition.
 \end{itemize}
 By $div_{\uvec{x}}\mathbf{F}(\uvec{u}(\uvec{x},t))$ we mean the divergence operator in the only spatial coordinates applied to the flux i.e. 
 $$div_{\uvec{x}}\mathbf{F}(\uvec{u}(\uvec{x},t))=\sum_{d=1}^D \frac{\partial}{\partial x^d}\mathbf{F}_d(\uvec{u}(\uvec{x},t))$$ where $\mathbf{F}_d \in \mathbb{R}^N$ $d=1,2,\dots,D$ is the $d$ component of the flux $\uvec{F}=(\mathbf{F}_1,\mathbf{F}_2,\dots,\mathbf{F}_D)$.
-We assume the flux to be Lipschitz-continuous and the source term to be continuous and Lipschitz-continuous with respect to $\uvec{u}$ uniformly with respect to $\uvec{x}$ and $t$.
-For the sake of compactness in the following we will refer to $\uvec{u}(\uvec{x},t)$, $\mathbf{F}(\uvec{u}(\uvec{x},t))$ and $\mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))$ simply by $\uvec{u}$, $\flux$ and $\source$.
+%We assume the flux to be Lipschitz-continuous and the source term to be continuous and Lipschitz-continuous with respect to $\uvec{u}$ uniformly with respect to $\uvec{x}$ and $t$.
+For the sake of compactness in the following we will often refer to $\uvec{u}(\uvec{x},t)$, $\mathbf{F}(\uvec{u}(\uvec{x},t))$ and $\mathbf{S}(\uvec{x},t,\uvec{u}(\uvec{x},t))$ simply by $\uvec{u}$, $\flux$ and $\source$.
 \begin{observation}
-To be more precise we also say that in order for the system \ref{sys} to be hyperbolic we need that any real linear combination of the Jacobians of the components of the flux calculated in any admittible $\uvec{u}$ must be real diagonalizable i.e. the matrix 
+To be more precise we also say that in order for the system \ref{sys} to be hyperbolic we need that any real linear combination of the Jacobians of the components of the flux calculated in any admissible\footnote{If we consider a system of balance laws modeling some real phenomenon, it can happen that not all the states of the space $\mathbb{R}^N$ are admissible for a solution $\uvec{u}$ under a physical point of view. For example if we consider the Euler equation we have that the density and the pressure have to be positive. This results in a restriction on the space of the possible values that can be assumed from the vector $\uvec{u}$ if we set initial and boundary conditions consistent with the physics of the problem associated to the system of balance laws.} $\uvec{u}$ must be real diagonalizable i.e. the matrix 
 $$\sum_{d=1}^D \omega_d \frac{\partial\mathbf{F}_d}{\partial \uvec{u}}(\uvec{u})$$
-must have $D$ real eigenvalues and $D$ real eigenvectors $\forall \uvec{u} \in \mathcal{U}$ and $\forall \uvec{\omega}=(\omega_1,\dots,\omega_D)^T \in \mathbb{R}^D$.
+must have $D$ real eigenvalues and $D$ real eigenvectors for any admissible $\uvec{u}$ and $\forall \uvec{\omega}=(\omega_1,\dots,\omega_D)^T \in \mathbb{R}^D$.
 \end{observation}
 \section{Derivation of balance laws}
 We will now give a practical meaning to our analytical problem \ref{sys} by presenting its general derivation in the context of a generic real application.
-There is a huge number of phenomena in physics, chemistry, biology, engineering and social sciences that can be modeled through a vectorial equation like the one in \ref{sys}. Basically whenever we want to express the conservation of some quantities, the components of the vector of the conserved quantities $\uvec{u}$, over a certain volume $\Omega$ (either physical or not) in a Eulerian formulation we end up with a hyperbolic system of balance laws. 
-We start by an integral balance at a general time $t \in \mathbb{R}^+_0$ for a general control volume $V \subseteq  \Omega$ with respect to the quantities of interest $\uvec{u}$ as represented in figure \ref{conservation}. The set $V$ is an arbitrary smooth-enough connected open subset of $\Omega$.  
+There is a huge number of phenomena in physics, chemistry, biology, engineering and social sciences that can be modeled through a vectorial equation like the one in \ref{sys}. Basically whenever we want to express the conservation of some quantities (the components of the vector of the conserved quantities $\uvec{u}$) over a certain volume $\Omega$ (either physical or not) in a Eulerian formulation we end up with a hyperbolic system of balance laws. 
+We start by an integral balance at a general time $t \in \mathbb{R}^+_0$ for a general control volume $V \subseteq  \Omega$ with respect to the quantities of interest collected in the vector $\uvec{u}$. The situation is represented in figure \ref{conservation}. The set $V$ is an arbitrary connected open subset of $\Omega$ with smooth-enough boundary.  
 \begin{figure}[hp] \centering{\includegraphics[scale=0.5]{conservation.pdf}}
 \caption{Representation of the conservation in the general control volume $V$.}
 \label{conservation}
@@ -785,22 +787,22 @@ The balance reads
 \int_V \frac{\partial}{\partial t}\uvec{u} d \uvec{x} + \int_{\partial V} \flux \cdot \uvec{\nu} d \sigma(\uvec{x}) = \int_V \source d \uvec{x} \quad  \forall V\subseteq \Omega, \forall t \in \mathbb{R}^+_0
 \end{equation}
 where $\uvec{\nu}$ is the outward-pointing normal vector to the surface $\partial V$. The equation \ref{balance} is known as the "integral" or "global" formulation of a system of balance laws. The first term represents the rate of change of the amount of conserved quantities $\uvec{u}$ in the control volume $V$. The second term represents the surface integral of the normal flux across $\partial V$ i.e. the amount of $\uvec{u}$ exiting from the control volume per unit of time. The last term represents the amount of conserved quantities $\uvec{u}$ generated by the source in the control volume per unit of time.
-If we assume $\flux \cdot \uvec{\nu}$ to be regular in $\overline{V}$, we can apply the Gauss divergence theorem and get
+If we assume $\flux$ to be regular in $\overline{V}$, we can apply the Gauss divergence theorem and get
 $$\int_V \frac{\partial}{\partial t}\uvec{u} d \uvec{x} + \int_V div_{\uvec{x}}\flux d \uvec{x} = \int_V \source d \uvec{x}.$$
 
 
-Since this balance holds for any time $t\in \mathbb{R}^+_0$ and for any smooth-enough control volume $V\subseteq \Omega $, under the assumption of regularity for the integrand functions, from the arbitrariness of $V$ we get the vectorial partial differential equation \ref{sys} that we recall for clarity
+Since this balance holds for any time $t\in \mathbb{R}^+_0$ and for any control volume $V\subseteq \Omega $, under the assumption of regularity for the integrand functions, from the arbitrariness of $V$ we get the vectorial partial differential equation \ref{sys} that we recall for clarity
 $$
 \frac{\partial}{\partial t}\uvec{u}+div_{\uvec{x}} \mathbf{F}=\mathbf{S} \quad \forall (\uvec{x},t) \in \Omega\times \mathbb{R}^+_0
 $$
 which is referred as the "differential" or "local" formulation of the system of balance laws.
 \begin{observation}
-The control volume $V$, as well as the spatial domain $\Omega$, can either be fixed or depend on time. Clearly in the first case the normal $\nu$ just depends on space while in the second case it also depends on time. Let's consider for example a deformable body with its shape varying in time. In this case the spatial domain changes in time. Anyway we will just consider spatial domains fixed in time.
+The control volume $V$, as well as the spatial domain $\Omega$, can either be fixed or depend on time. Clearly in the first case the normal $\nu$ just depends on space while in the second case it also depends on time. Let's consider for example a deformable body with its shape varying in time, in this case the spatial domain changes in time. Anyway we will just consider spatial domains fixed in time.
 \end{observation}
 \begin{observation}
-So far the spatial domain $\Omega$ can also be unbounded. Clearly when we will deal with the problem under a numerical point of view we will be interested in bounded spatial domains and we will have to set a final time $T$.¨ 
+So far the spatial domain $\Omega$ can also be unbounded. Clearly when we will deal with the problem under a numerical point of view we will be interested in bounded spatial domains and we will have to set a final time $T$.
 \end{observation}
-Several boundary conditions can be imposed. In many applications they are a representation of the physical conditions that we want to reproduce. In these cases we can derive them from the physical model. Due to the multiplicity of the existing types of boundary conditions we do not treat their derivation in detail. 
+Several boundary conditions can be imposed. In the applications they are a representation of the physical conditions that we want to reproduce. In these cases we can derive them from the physical model. Due to the multiplicity of the existing types of boundary conditions we do not treat their derivation in detail. 
 
 %However we present a particular class of boundary conditions named "inflow-outflow" which will be the reference ones in our numerical context.
 %\subsection{Inflow-outflow boundary condition}
@@ -841,24 +843,24 @@ Several boundary conditions can be imposed. In many applications they are a repr
 
 
 \section{Weak solutions}
-We will now make a small description of the solutions that we expect to a system like \ref{sys}.
+We will now make a small description of the solutions that we expect for a system like \ref{sys}.
 A "classical" or "strong" solution to \ref{sys} is a smooth-enough vectorial function satisfying it pointwise (and obviously satisfying also the initial and the bounndary conditions).
-It is well known that the notion of "classical" solution is not "sufficient": for nonlinear fluxes we can get discontinuities in the solution even if we start from smooth initial conditions. In the general case there is no hope to find a strong solution.
+It is well known that the notion of classical solution is not "sufficient": for nonlinear fluxes we can get discontinuities in the solution even if we start from smooth initial conditions. In the general case there is no hope to find a strong solution.
 Since the mentioned discontinuities show up also in the phenomena that we want to model\footnote{Let's consider for example the shock waves generated by an aircraft moving at supersonic speed or discontinuities in the properties of non-homogeneous media.} this is not a negligible problem and we need to solve it. Let's notice also that the discontinuities in the solution determine a violation of the hypoteses of regularity under which we passed from the integral formulation to the differential one.
 To deal with this problem we introduce the weak solutions. We look at our equation \ref{sys} under a distributional point of view. 
 
 %%%A non-naive weak formulation is not possible: if we want the boundary condition to figure in the weak problem we can just multiply by a test function and integrate.
 %%%We have the boundary figuring (specially in time) and we cannot evaluate an abstract operator like a distribution pointwise... There is to say that we know the value at the initial time.
 
-In practice we multiply our equation by a scalar smooth arbitrary test function with compact support and integrate in space and time
+In practice we multiply our equation \ref{sys} by a scalar smooth arbitrary test function with compact support and integrate in space and time
 
 $$\int_{\Omega \times \mathbb{R}^+_0} \left(\frac{\partial}{\partial t}\uvec{u}+div_{\uvec{x}} \flux\right)\varphi(\uvec{x},t) d\uvec{x} dt=\int_{\Omega \times \mathbb{R}^+_0} \source\varphi(\uvec{x},t) d\uvec{x} dt \quad \forall \varphi \in C^1_o(\overline{\Omega} \times \mathbb{R}^+_0).$$
-Under hypoteses of regularity of the solution, the flux and the source term we can use the divergence theorem and write
+Under hypoteses of regularity of the solution and the flux we can use the divergence theorem and write
 $$\int_{\Omega} \left( \left[\uvec{u}\varphi(\uvec{x},t)\right]_{t=0}^{t=+\infty} - \int_{\mathbb{R}^+_0}\uvec{u}\frac{\partial}{\partial t}\varphi(\uvec{x},t) dt\right) d\uvec{x}+\int_{\mathbb{R}^+_0}\left( \int_{\partial \Omega} \varphi(\uvec{x},t)\flux\cdot\uvec{\nu}d\sigma(\uvec{x})- \int_{\Omega} \flux \cdot \nabla_{\uvec{x}} \varphi(\uvec{x},t) d\uvec{x}\right)d t=$$
-$$\int_{\Omega \times \mathbb{R}^+_0} \source\varphi(\uvec{x},t) d\uvec{x} dt \quad \forall \varphi \in C^1_o(\overline{\Omega} \times \mathbb{R}^+_0)$$
-where $\nabla_{\uvec{x}}$ is the gradient in the only spatial coordinates.
-Thus due to the compact support of $\varphi$ we have
-$$-\int_{\Omega}\uvec{u}(\uvec{x},0 ) \varphi(\uvec{x},0)d \uvec{x}-\int_{\Omega \times \mathbb{R}^+_0}\left(\uvec{u}\frac{\partial}{\partial t} \varphi(\uvec{x},t) + \flux \cdot \nabla_{\uvec{x}} \varphi(\uvec{x},t) \right) d\uvec{x}dt+$$
+$$=\int_{\Omega \times \mathbb{R}^+_0} \source\varphi(\uvec{x},t) d\uvec{x} dt \quad \forall \varphi \in C^1_o(\overline{\Omega} \times \mathbb{R}^+_0)$$
+where $\nabla_{\uvec{x}}$ is the gradient in the only spatial coordinates and $\uvec{\nu}$ is the outward-pointing normal vector to the surface $\partial \Omega$.
+Thus due to the compact support of $\varphi$ and reminding the initial condition $\uvec{u}(\uvec{x},0)=\uvec{u}_0(\uvec{x})$ we have
+$$-\int_{\Omega}\uvec{u}_0(\uvec{x}) \varphi(\uvec{x},0)d \uvec{x}-\int_{\Omega \times \mathbb{R}^+_0}\left(\uvec{u}\frac{\partial}{\partial t} \varphi(\uvec{x},t) + \flux \cdot \nabla_{\uvec{x}} \varphi(\uvec{x},t) \right) d\uvec{x}dt+$$
 \begin{equation}
 \label{weak}
 + \int_{\partial\Omega \times \mathbb{R}^+_0}\left( \varphi(\uvec{x},t)\flux\cdot\uvec{\nu} \right) d\sigma(\uvec{x})dt=\int_{\Omega \times \mathbb{R}^+_0} \source\varphi(\uvec{x},t) d\uvec{x} dt \quad \forall \varphi \in C^1_o(\overline{\Omega} \times \mathbb{R}^+_0).
@@ -882,30 +884,31 @@ We can simply verify that a strong solution is also a weak solution. Clearly the
 \end{observation}
 \begin{observation}
 If we take $\Omega=\mathbb{R}^D$, due to the compact support of $\varphi$, we have that \ref{weak} reduces to 
-$$-\int_{\mathbb{R}^D}\uvec{u}(\uvec{x},0 ) \varphi(\uvec{x},0)d \uvec{x}-\int_{\mathbb{R}^D \times \mathbb{R}^+_0}\left(\uvec{u}\frac{\partial}{\partial t} \varphi(\uvec{x},t) + \flux \cdot \nabla_{\uvec{x}} \varphi(\uvec{x},t) \right) d\uvec{x}dt=$$
+$$-\int_{\mathbb{R}^D}\uvec{u}_0(\uvec{x}) \varphi(\uvec{x},0)d \uvec{x}-\int_{\mathbb{R}^D \times \mathbb{R}^+_0}\left(\uvec{u}\frac{\partial}{\partial t} \varphi(\uvec{x},t) + \flux \cdot \nabla_{\uvec{x}} \varphi(\uvec{x},t) \right) d\uvec{x}dt=$$
 $$=\int_{\mathbb{R}^D \times \mathbb{R}^+_0} \source\varphi(\uvec{x},t) d\uvec{x} dt \quad \forall \varphi \in C^1_o(\mathbb{R}^D \times \mathbb{R}^+_0).$$
 \end{observation}
 
 Many other things can be said about weak solutions: it can be shown that a shock (a discontinuity of first kind) in a weak solution must fulfil the Rankine-Hugoniot condition which represents a relation between the "jump" and the "speed"; the weak solutions are in general not unique so we need a criterion to select the ones which have a physical meaning and this is often given by some inequalities, the weak solutions satisfying these inequalities are said "entropy solutions". 
 A deeper analysis is out of the purpose of this document. 
-What we have said so far can seem to be very distant from our initial goal of showing how to apply the Deferred Correction to the balance laws but in the author's opinion it was fundamental in order to give a clear idea of the problem that we are trying to solve. Moreover almost all the numerical approaches are designed to detect approximations of  weak (eventually entropic) solutions.
+What we have said so far can seem to be very distant from our initial goal of showing how to apply the Deferred Correction to the numerical methods for systems of balance laws but in the author's opinion it was fundamental in order to give a clear idea of the problem that we are trying to solve. Moreover almost all the numerical approaches are designed to detect approximations of weak (eventually entropic) solutions.
 
 We can now enter into the details of the numerical methods for hyperbolic systems of balance laws.
 
 \chapter[Semidiscrete formulation and mass matrix]{The semidiscrete formulation and the role of the mass matrix}
-Before presenting the Residual Distribution and the Continuous and Discontinuous Galerkin Finite Elements methods\footnote{We will just present the methods without treating the problem of the convergence of the detected approximated solutions to the desired analytical weak ones.} and show how to apply the Deferred Correction in the context of these ones, we introduce from a general point of view the semidiscrete formulation which is a general strategy shared by several numerical methods for hyperbolic systems of balance laws (among which Residual Distribution and Galerkin Finite Elements) to deal separately with the space and time discretizations. It leads to a system of ODEs commonly involving a mass matrix. We will focus on the problem of the inversion of this matrix.\\
-We would like to solve numerically an hyperbolic system of balance laws in the general form \ref{sys} that we recall for clarity
+Before presenting the Residual Distribution and the Galerkin Finite Elements methods\footnote{We will just present the methods without treating the problem of the convergence of the detected approximated solutions to the desired analytical weak ones.} and show how to apply the Deferred Correction in the context of these ones, we introduce from a general point of view the semidiscrete formulation which is a general strategy shared by several numerical methods for hyperbolic systems of balance laws\footnote{In reality the semidiscrete formulation also applies to some numerical methods for other types of equations but we will just consider hyperbolic systems of balance laws.} (among which Residual Distribution and Galerkin Finite Elements) to deal separately with the space and time discretizations. It leads to a system of ODEs commonly involving a mass matrix. We will focus on the problem of the inversion of this matrix.\\
+We would like to solve numerically a hyperbolic system of balance laws in the general form \ref{sys} that we recall for clarity
 $$
-\frac{\partial}{\partial t}\uvec{u}+div_{\uvec{x}} \mathbf{F}=\mathbf{S} \quad \forall (\uvec{x},t) \in \Omega\times \mathbb{R}^+_0.
+\frac{\partial}{\partial t}\uvec{u}+div_{\uvec{x}} \mathbf{F}=\mathbf{S} \quad \forall (\uvec{x},t) \in \Omega\times \mathbb{R}^+_0
 $$
+with some initial and boundary conditions.
 As anticipated, from a numerical point of view we are interested in bounded spatial domains $\Omega$ and we have to choose a final time $T\in \mathbb{R}^+$.
-Thus we would like to find $\uapp$, approximation in $\overline{\Omega} \times [0,T]$ of a weak (eventually entropic) solution $\uvec{u}$ to our problem i.e. satisfying the integral relation \ref{weak} with $\Omega\subseteq \mathbb{R}^D$ bounded connected open set with a smooth-enough boundary (and eventually some entropy inequalities).
+Thus we would like to find $\uapp$ approximation in $\overline{\Omega} \times [0,T]$ of $\uvec{u}$ which is a weak (eventually entropic) solution to our problem i.e. satisfying the integral relation \ref{weak} with $\Omega\subseteq \mathbb{R}^D$ bounded connected open set with a smooth-enough boundary (and eventually some entropy inequalities).
 \begin{observation}
-Often the reference spatial domain for the numerical method is just an approximation of the analytical spatial domain $\Omega$ in which we would like to solve the initial equation. This reference domain is usually referred as "discretized". Here we assume for simplicity that the discretized domain coincides with the analytical one. So we use indifferently $\Omega$ for the "analytical" and "numerical" reference domain.
+Often the reference spatial domain for the numerical method is just an approximation of the analytical spatial domain $\Omega$ in which we would like to solve the initial equation. This reference domain is usually referred as "discretized". Here we assume for simplicity that the discretized domain coincides with the analytical one. Thus we use indifferently $\Omega$ for the "analytical" and "numerical" reference domains and so we will do when we will enter into the details of the Residual Distribution and the Galerkin Finite Elements methods.
 \end{observation}
 A common approach to solve numerically a system of balance laws consists in "splitting" the resolution of the equation in space and the resolution of the equation in time. We assume at any time $t \in [0,T]$ the approximated solution $\uapp$ in a finite dimensional space $(V_h)^N$ where $V_h=span\lbrace \varphi_i\rbrace_{i=1,2,\dots,I}$ and the (known) functions $\varphi_i:\overline{\Omega}\rightarrow \mathbb{R}$ are a basis of $V_h$ and depend just on space. 
 \begin{observation}
-The functions $\varphi_i$ are usually but not mandatorily piecewise polynomial functions. Each one of them corresponds usually to a node $\uvec{x}_i$ located somewhere in the closure of the discretized spatial domain. In these cases we have that the value of the basis function $\varphi_i$ in its associated node $\uvec{x}_i$ is not $0$ i.e. $\varphi_i(\uvec{x}_i)\neq0$. The nodes $\uvec{x}_i$ $i=1,2,\dots,I$ are often referred as the degrees of freedom, DoFs, of the approximated solution. 
+The functions $\varphi_i$ are usually but not mandatorily piecewise polynomial functions. In the case of piecewise polynomial approximations, each basis function $\varphi_i$ corresponds usually but not mandatorily to a node $\uvec{x}_i$ located somewhere in the closure of the discretized spatial domain. In these cases we have that the value of the basis function $\varphi_i$ in its associated node $\uvec{x}_i$ is not $0$ i.e. $\varphi_i(\uvec{x}_i)\neq0$. The nodes $\uvec{x}_i$ are often referred as the degrees of freedom, DoFs, of the approximated solution\footnote{As we will see, if we have continuous piecewise polynomial approximations to different basis functions are associated different nodes, while in the context of discontinuous piecewise polynomial approximations to each node are in general associated different basis functions.}. 
 \end{observation}
 In other words we require every component of the approximated solution at any time $t$ to be in the space of functions $V_h$.
 In practice we are assuming 
@@ -918,7 +921,7 @@ with $\uvec{c}_i(t) \in \mathbb{R}^N \quad \forall i=1,2,\dots, I \quad \forall 
 The basis functions $\varphi_i$ are fixed and known, the only unknowns are the coefficients $\uvec{c}_i(t)$. Looking for $\uapp$ is equivalent to look for $\uvec{c}_i(t) \quad i=1,2,\dots, I \quad t\in [0,T]$.
 \end{observation}
 The problem is now to evaluate these coefficients in $[0,T]$.
-Thus, according to some mathematical and physical criteria, some relations based on the initial equation \ref{sys} are derived. From the combination of these relations and the discretization \ref{discr} we usually get a system of ordinary differential equations involving a mass matrix $\massmatrix$ which reads
+Thus, according to some mathematical and physical criteria depending on the chosen method, some relations based on the initial equation \ref{sys} are derived. From the combination of these relations and the discretization \ref{discr} we usually get a system of ordinary differential equations involving a mass matrix $\massmatrix$ which reads
 \begin{equation}
 \label{semidiscr}
 \massmatrix \frac{d}{dt}\uvec{c}(t)=\uvec{H}(t,\uvec{c}(t))
@@ -931,19 +934,20 @@ $$\uvec{c}(t)=\begin{pmatrix}
 \vdots\\
 \uvec{c}_I(t)\\
 \end{pmatrix}\in \mathbb{R}^{I\times N}.$$
-We have obviously $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ and $\uvec{H}(t,\uvec{c}(t))\in \mathbb{R}^{I\times N}$ $\forall t \in [0,T].$  
+We have obviously $\massmatrix \in \mathbb{R}^{(I\times N)\times(I\times N)}$ and the vector $\uvec{H}(t,\uvec{c}(t))\in \mathbb{R}^{(I\times N)}$ $\forall t \in [0,T].$  
 The system of ODEs \ref{semidiscr} is usually referred as "semidiscrete formulation" of the particular method that we are using and we have to solve it in time.
 The initial condition $\uvec{c}(0)=\uvec{c}_0$ is given by the analytical initial condition on the hyperbolic system of balance laws \ref{sys} that we want to solve (projected into the finite dimensional space $(V_h)^N$).
 
 \begin{observation}
-The Discontinuous Galerkin and the Residual Distribution methods are based on this approach, so in both cases we get a coupled system of ODEs like the one in equation \ref{semidiscr}.
-In the Discontinuous Galerkin case the mass matrix is not dependent on time nor on $\uvec{c}(t)$, moreover it is nonsingular, block diagonal and defined positive. Usually in this case the mass matrix is inverted and the resulting system of ODEs
+The Galerkin Finite Elements and the Residual Distribution methods are based on this approach, so in both cases we get a coupled system of ODEs like the one in equation \ref{semidiscr}.
+In the Discontinuous Galerkin case the mass matrix is not dependent on time nor on $\uvec{c}(t)$, moreover it is defined positive (thus nonsingular) and block diagonal. Usually in this case the mass matrix is inverted and the resulting system of ODEs
 $$ \frac{d}{dt}\uvec{c}(t)=\massmatrix^{-1}\uvec{H}(t,\uvec{c}(t))$$
-is solved with a classical ODE solver, typically a Runge-Kutta scheme\footnote{To be more specific we also say that a huge variety of ODEs solvers exists and depending on the features we are interested in we can choose particular methods rather than others. For example if we are interested in controlling the total variation of the solution, we can choose a strong stability preserving Runge-Kutta method (SSP-RK). If we are interested in the preservation of the non-negativity of certain variables we can choose a positivity preserving scheme. We do not enter into the detail of such methods.}.
-In the general case the matrix $\massmatrix$ depends on the time $t$ and on the vector $\uvec{c}(t)$ and we don't even know whether it is invertible or not. This is the case for example of the Residual Distribution methods. In such occurrences trying to solve the system as in the Discontinuous Galerkin case would lead to very big problems\footnote{As we said, we have no information about the invertibility of the matrix. Moreover since it depends on $t$ and on $\uvec{c}(t)$, a classical approach would be very likely to require to recompute it and invert it (assuming that this is possible) at each time step.} thus avoiding the inversion of the mass matrix is crucial. Here the Deferred Correction comes to aid.
+is solved with a classical ODE solver, typically a Runge-Kutta scheme\footnote{To be more specific we also say that a huge variety of ODEs solvers exists and depending on the features that we are interested in we can choose particular methods rather than others. For example if we are interested in controlling the total variation of the solution we can choose a strong stability preserving Runge-Kutta method (SSP-RK). If we are interested in the preservation of the non-negativity of certain variables we can choose a positivity preserving scheme. We do not enter into the details of such methods.}.
+In the general case the matrix $\massmatrix$ depends on the time $t$ and on the vector $\uvec{c}(t)$ and we don't even know whether it is invertible or not. This is the case for example of some Residual Distribution methods. In such occurrences trying to solve the system as in the Discontinuous Galerkin case would lead to very big problems\footnote{As we said, we have no information about the invertibility of the matrix. Moreover since it depends on $t$ and on $\uvec{c}(t)$, a classical approach would be very likely to require to recompute it and invert it (assuming that this is possible) at each time step.} thus avoiding the inversion of the mass matrix is crucial. 
+Some other Residual Distribution methods lead to a semidiscrete formulation very similar to the one of the (stabilized) Continuous Galerkin methods with a mass matrix not dependent on time, defined positive (thus nonsingular) but sparse. The inversion of the matrix is not cheap by a computational point of view because it is sparse and we cannot rely on the efficient algorithms designed for block diagonal matrices contrarily to the discontinuous Galerkin case. The reader could argue that this operation is done just once. This is indeed true but if we opt for a standard method requiring the inversion of the mass matrix, at each time step we will have to multiply this huge inverse for some evaluations of the vector $\uvec{H}$ (or its approximations). This results in a very big computational cost. Here the Deferred Correction comes to aid.
 \end{observation}
 \begin{observation}
-The Finite Volume methods are characterized by a different approach. The coefficients represent the averages of the approximated solution in some regions of the (discretized) space domain but also in this case we arrive to a semidiscrete formulation like equation \ref{semidiscr}. In this case the mass-matrix is diagonal nonsingular and its entries are the measures of the mentioned regions. Thus in this case the inversion of the mass-matrix is straightforward.
+The Finite Volume methods are characterized by a different approach. The coefficients represent the averages of the approximated solution in some regions of the (discretized) space domain but also in this case we arrive to a semidiscrete formulation like equation \ref{semidiscr}. In this case the mass matrix is diagonal, nonsingular and its entries are the measures of the mentioned regions. Thus in this case the inversion of the mass matrix is straightforward.
 \end{observation}
 \begin{observation}
 %FV -> polynomials of order 0
@@ -953,8 +957,8 @@ The Finite Volume methods are characterized by a different approach. The coeffic
 %second order RK -> order 2 accuracy
 %=> Order 2 accuracy
 %But not always, for example in SUPG and more in genreal in RD schemes Galerkin +diffusion with a stabilization term not consistent
-Generally a spatial discretization made with polynomial functions $\varphi_i$ of order $R$ and an ODE solver $R+1$-order accurate lead to a globally $R+1$-order accurate scheme. This means that the coefficients $\tilde{\uvec{c}}(t^{*})$ that characterize the approximated solution $\uvec{u}_h$ at the time $t^{*}$ determined through the used method are $R+1$-order accurate approximations of the coefficients $\uvec{c}(t^{*})$ that we obtain projecting the exact solution at the time $t^{*}$ over $(V_h)^N$.
-But let's underline that a spatial discretization made with polynomial functions of order $R$ and an ODE solver $R+1$-order accurate are just necessary but not sufficient ingredients for $R+1$-order accuracy. If the equations of the system \ref{semidiscr} are not carefully derived, the accuracy is wasted and we get unexpected low orders of convergence.
+Generally a spatial discretization made with polynomial functions $\varphi_i$ of order $R$ and an ODE solver $(R+1)$-order accurate lead to a globally $(R+1)$-order accurate scheme. This means that the coefficients $\tilde{\uvec{c}}(t^{*})$ that characterize the approximated solution $\uvec{u}_h$ at the time $t^{*}$ determined through the used method are $(R+1)$-order accurate approximations of the coefficients $\uvec{c}(t^{*})$ that we obtain projecting the exact solution at the time $t^{*}$ over $(V_h)^N$.
+But let's underline that a spatial discretization made with polynomial functions of order $R$ and an ODE solver $(R+1)$-order accurate are just necessary but not sufficient ingredients for $(R+1)$-order accuracy. If the equations of the system \ref{semidiscr} are not carefully derived, the accuracy is wasted and we get unexpected low orders of convergence.
 \end{observation}
 Let's now present more in detail the Residual Distribution and the Continous and Discontinuous Galerkin Finite Elements methods and see how to apply the Deferred Correction to get explicit arbitrary high order accurate schemes for hyperbolic systems of balance laws.
 \chapter[RD and continuous Galerkin FEM]{The Residual Distribution and continuous Galerkin Finite Elements methods}
