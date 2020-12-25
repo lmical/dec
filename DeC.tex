@@ -87,7 +87,7 @@ Institut für Mathematik\\
 {\bf Lorenzo Micalizzi}\\
 \vspace{1.7cm}
 {\bf Deferred Correction:} \\
-{\bf from simple integration of systems of ordinary differential equations to explicit time-integration in Residual Distribution and Continuous and Discontinuous polynomial Galerkin FEM schemes for hyperbolic systems of balance laws} \\
+{\bf from simple integration of systems of ordinary differential equations to explicit time-integration in Residual Distribution and polynomial Continuous and Discontinuous Galerkin FEM schemes for hyperbolic systems of balance laws} \\
 \vspace{1.7cm}
 \vspace{1.2cm}
 
@@ -110,30 +110,33 @@ It can also be applied in the context of Residual Distribution and polynomial Co
 The structure of this script is the following:
 \begin{itemize}
 \item[•] We start by introducing the Deferred Correction as a general method to approximate the solution of a general "tough" operator $\lopd^2$ with an arbitrary high order precision through an iterative procedure which makes use of the operator $\lopd^1$ which is a "naive" operator.
-In the applications the "tough" operator $\lopd^2$ is an implicit high order operator difficult to solve while the "naive" operator $\lopd^1$ is an explicit low order operator easy to solve.
+In the applications the "tough" operator $\lopd^2$ is an implicit high-order operator difficult to solve while the "naive" operator $\lopd^1$ is an explicit low-order operator easy to solve.
 \item[•] Then we apply this method to the context of the integration of systems of ordinary differential equations.
-\item[•] In order to apply the Deferred Correction to some numerical methods for solving hyperblic systems of balance laws, we present a small introduction of the analytical problem. We derive the balance laws and we introduce their weak formulation in order to overcome the limits of the classical one.
+\item[•] In order to apply the Deferred Correction to some numerical methods for solving hyperbolic systems of balance laws, we present a small introduction of the analytical problem. We derive the balance laws and we introduce their weak formulation in order to overcome the limits of the classical one.
 \item[•] Thus we introduce from a general point of view the semidiscrete formulation which is a framework common to many numerical methods for hyperbolic systems of balance laws (like Residual Distribution and Galerkin Finite Elements) and focus on the problem of the inversion of the mass matrix.
-%%
-\item[•] Hence we present the Residual Distribution and the (stabilized) continuous polynomial Galerkin Finite Elements methods and show the connection between them. Thus we see how to apply the Deferred Correction in the context of these methods for which avoiding the inversion of the mass matrix without spoiling the accuracy of the scheme plays a crucial role.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%OK
+\item[•] Hence we present the Residual Distribution and the (stabilized) continuous Galerkin Finite Elements methods and we show the connection between these approaches in the case of polynomial approximations. Thus we see how to apply the Deferred Correction in the context of these methods for which avoiding the inversion of the mass matrix without spoiling the accuracy of the scheme plays a crucial role.
 \item[•] Therefore we introduce the Discontinuous Galerkin Finite Elements approach and show how the Deferred Correction can be enforced also in this case.
 \item[•] In the end we show how the Deferred Correction method, as an ODE solver, can be seen as a particular Runge-Kutta scheme.
 \end{itemize} 
+
 \chapter[The Deferred Correction in an abstract framework]{The Deferred Correction as a general procedure in an abstract framework}
 %\chapter{The Deferred Correction as a general procedure in an abstract framework}
 We will first introduce the Deferred Correction in an abstract context.
-Assume that we have two general operators depending on a parameter\footnote{This parameter represents the time-step in the context of the integration of ordinary differential equations, while it represents the characteristic mesh size in the application to hyperbolic balance laws. The esteems that we will get will be strictly depending on this parameter which has to be fixed in advance. In other words we are able to prove the arbitrary high-order consistency for a fixed $\Delta$ and what happens in the mesh refinment is still unclear from a theoretical point of view even if numerical experiments seem to confirm the desired order of convergence.} $\Delta$ between two normed vector spaces $\left(X, \norm{\cdot}_X \right)$ and $\left(Y, \norm{\cdot}_Y \right)$
+Assume that we have two general operators depending on a parameter\footnote{This parameter represents the time-step in the context of the integration of ordinary differential equations, while it represents the characteristic mesh size in the application to hyperbolic systems of balance laws. The esteems that we will get will be strictly depending on this parameter which has to be fixed in advance. In other words we are able to prove the arbitrary high order consistency for a fixed $\Delta$ and what happens in the mesh refinment is still unclear from a theoretical point of view even if numerical experiments seem to confirm the desired order of convergence.} $\Delta$ between two normed vector spaces $\left(X, \norm{\cdot}_X \right)$ and $\left(Y, \norm{\cdot}_Y \right)$
 $$\lopd^1,\lopd^2:X \longrightarrow Y.$$
 \begin{observation}
 Even if we are still in an abstract context and not in the specific case of an evolution problem (like for example an ordinary differential equation) it is useful in order to make things clearer to give an idea of the objects we are working with.
-Imagine that we want to solve numerically a Cauchy problem for a system of ODEs, then $\lopd^2$ is an high-order implicit operator and $\lopd^1$ is an explicit low-order operator (for example the operator that we get by using the Euler approximation).
+Imagine that we want to solve numerically a Cauchy problem for a system of ODEs, then $\lopd^2$ is a high-order implicit operator and $\lopd^1$ is an explicit low-order operator (for example the operator that we get by using the Euler approximation).
 We would like to solve $\lopd^2$ i.e. finding $\uvec{u}\in X$ such that $\lopd^2(\underline{\uvec{u}})=\uvec{0}_Y$ but this is not so easy given the implicit nature of the operator. On the other hand the other exlicit operator $\lopd^1$ is very easy to solve\footnote{More in general it is easy to solve $\lopd^1=\underline{\uvec{v}}$ with $\underline{\uvec{v}} \in Y$ i.e. finding $\underline{\uvec{u}}\in X$ such that $\lopd^1(\underline{\uvec{u}})=\underline{\uvec{v}}$.} but it is a low-order operator. 
 \end{observation}
-This observation was meant to provide a better understanding of the meaning of the operators $\lopd^1$ and $\lopd^2$ and of the direction that we are going to take. Let's now go back to our general framework, we focus more in detail later on the application to the evolution problems. 
-For the moment just imagine that we have to solve $\lopd^2$ because it provides a more accurate solution but this operator is difficult to solve. We would like to solve $\lopd^1$ instead of $\lopd^2$ because it is easier to solve but it is not enough accurate.
-In the next theorem we will provide a receipt to get a high-order approximation of the solution of $\lopd^2$ in an explicit way by combining the operators $\lopd^1$ and $\lopd^2$ through an iterative procedure.
+This observation was meant to provide a better understanding of the meaning of the operators $\lopd^1$ and $\lopd^2$ and of the direction that we are going to take. Let's now go back to our abstract framework, we will focus more in detail later on the application to the evolution problems. 
+For the moment just imagine that we have to solve $\lopd^2$ (because it provides a more accurate solution to a more general problem that we would like to solve) but this operator is difficult to solve. We would like to solve $\lopd^1$ instead of $\lopd^2$ because it is easier to solve (but its solution is not enough accurate with respect to the one our general problem).
+In the next theorem we will provide a receipt to get an arbitrary high order approximation of the solution of $\lopd^2$ in an explicit way by combining the operators $\lopd^1$ and $\lopd^2$ through an iterative procedure.
 \begin{theorem} \textbf{Deferred Correction}\\
-If 
+If the following hypoteses hold
 \begin{itemize}
 \item[i)] \textbf{Existence of a unique solution to $\lopd^2$} \\
 $\exists ! \usol \in X$ solution of $\lopd^2$ i.e. such that $\lopd^2(\usol)=\uvec{0}_Y$;
@@ -159,9 +162,9 @@ By using the sub-coercivity of $\lopd^1$ we have
 \label{eq:2}
 \norm{\underline{\uvec{u}}^{(P)}-\usol}_X\leq \frac{1}{\alpha_1}  \norm{\lopd^1(\underline{\uvec{u}}^{(P)})-\lopd^1(\usol)}_Y.
 \end{equation}
-Let's focus on the right side of this inequality. By definition of $\lopd^1(\underline{\uvec{u}}^{(p)})$ for $p=1,2,\dots,P$ in equation \ref{DeC}, we have
+Let's focus on the right hand side of this inequality. By definition of $\lopd^1(\underline{\uvec{u}}^{(p)})$ for $p=1,2,\dots,P$ in equation \ref{DeC}, we have
 $$\frac{1}{\alpha_1}  \norm{\lopd^1(\underline{\uvec{u}}^{(P)})-\lopd^1(\usol)}_Y = \frac{1}{\alpha_1}  \norm{\lopd^1(\underline{\uvec{u}}^{(P-1)})-\lopd^2(\underline{\uvec{u}}^{(P-1)})-\lopd^1(\usol)}_Y$$
-and since $\usol$ is the solution of $\lopd^2$ we have that $\lopd^2(\usol)=\uvec{0}_Y$ and we can add it on the right side and get
+and since $\usol$ is the solution of $\lopd^2$ we have that $\lopd^2(\usol)=\uvec{0}_Y$ and we can add it on the right hand side and get
 $$\frac{1}{\alpha_1}  \norm{\lopd^1(\underline{\uvec{u}}^{(P-1)})-\lopd^2(\underline{\uvec{u}}^{(P-1)})-\lopd^1(\usol)}_Y=\frac{1}{\alpha_1}  \norm{\lopd^1(\underline{\uvec{u}}^{(P-1)})-\lopd^2(\underline{\uvec{u}}^{(P-1)})-\lopd^1(\usol)+\lopd^2(\usol)}_Y.$$
 Thus the initial inequality \ref{eq:2} becomes 
 \begin{equation}
@@ -177,18 +180,23 @@ And thus \ref{eq:3} becomes
 \end{equation}
 By repeating these calculations recursively we get the thesis.
 \end{proof}
-The result is very general and may seem a little abstract but let's notice that if the operator $\lopd^1$ is "easy" to solve (as it will be) then \ref{DeC} represents a simple receipt to approximate arbitrarily well the solution $\usol$ of $\lopd^2$. The convergence to the solution for $P \rightarrow +\infty$ is ensured independently of the starting vector $\uvec{u}^{(0)}$ provided that $\Delta \frac{\alpha_2}{\alpha_1}<1$. 
+The result is very general and may seem a little abstract but let's notice that if the operator $\lopd^1$ is "easy" to solve (as it will be in the applications) then \ref{DeC} represents a simple receipt to approximate arbitrarily well the solution $\usol$ of $\lopd^2$. The convergence to the solution for $P \rightarrow +\infty$ is ensured independently of the starting vector $\uvec{u}^{(0)}$ provided that $\Delta \frac{\alpha_2}{\alpha_1}<1$. 
 Let's make some final observations.
 \begin{observation}
 \label{optimaliterations}
 If the solution $\usol$ of $\lopd^2$ is a $R$-th order approximation of the exact solution $\underline{\uvec{u}}^{ex}$ of a more general problem then a $R$-th order approximation $\underline{\tilde{\uvec{u}}}$ of $\usol$ is a $R$-th order approximation of the exact solution $\underline{\uvec{u}}^{ex}$ as well. It follows easily by applying the triangular inequality
 $$\norm{\underline{\tilde{\uvec{u}}}-\underline{\uvec{u}}^{ex}}_X \leq \norm{\underline{\tilde{\uvec{u}}}-\usol}_X+\norm{\usol-\underline{\uvec{u}}^{ex}}_X\leq O(\Delta^{R+1})+O(\Delta^{R+1})=O(\Delta^{R+1}).$$
-Thus in this case we have to use the Deferred Correction procedure to approximate $\usol$ exactly with $R$-th order accuracy, any other extra precision in approximating $\usol$ would be useless\footnote{In the context of the integration of ordinary differential equations, the solution $\usol$ of $\lopd^2$ will be a $(M+1)$-th order accurate approximation of the exact solution $\underline{\uvec{u}}^{ex}$ and we will perform $P=M+1$ iterations to get $\underline{\uvec{u}}^{(M+1)}$ which will be a $(M+1)$-th order accurate approximation of $\usol$ and thus of $\underline{\uvec{u}}^{ex}$.}. We will be more precise about the accuracy and the number of iterations needed to reach the highest possible accuracy later.
+Thus in this case we have to use the Deferred Correction procedure to approximate $\usol$ exactly with $R$-th order accuracy, any other extra precision in approximating $\usol$ would be useless\footnote{In the context of the integration of ordinary differential equations, the solution $\usol$ of $\lopd^2$ will be a $(M+1)$-order accurate approximation of the exact solution $\underline{\uvec{u}}^{ex}$ and we will perform $P=M+1$ iterations to get $\underline{\uvec{u}}^{(M+1)}$ which will be a $(M+1)$-order accurate approximation of $\usol$ and thus of $\underline{\uvec{u}}^{ex}$. Also in the application to the numerical methods for hyperbolic systems of balance laws we will have an analogous situation.}. We will be more precise about the accuracy and the number of iterations needed to reach the highest possible accuracy later in the applications.
 \end{observation}
 \begin{observation} %%%%%%%%%%TRUE?
-The independecy of the coefficients $\alpha_1$ and $\alpha_2$ may naively lead us to think that we can easily consider the limit for $\Delta \rightarrow 0$ but this is not true at least from a theoretical point of view. In fact the whole framework has a non-trivial dependence on $\Delta$: the operators $\lopd^1$ and $\lopd^2$ as well as the spaces $X$ and $Y$ and the norms on them depend on $\Delta$. Despite this the numerical experiments seem to confirm the desired order of convergence.
+The independecy of the coefficients $\alpha_1$ and $\alpha_2$ on $\Delta$ may naively lead us to think that we can easily consider the limit for $\Delta \rightarrow 0$ but this is not true at least from a theoretical point of view. In fact the whole framework has a non-trivial dependence on $\Delta$: the operators $\lopd^1$ and $\lopd^2$ as well as the spaces $X$ and $Y$ and the norms on them depend on $\Delta$. Despite this the numerical experiments seem to confirm the desired order of convergence.
 \end{observation}
 Now that we have introduced and proved the Deferred Correction in a general framework, the only thing that it is left to do to apply it in a more specific context is to characterize the objects needed (the operators $\lopd^1$ and $\lopd^2$, the spaces $X$ and $Y$, the norms) and verify that the three hypoteses are satisfied.
+
+
+%%%%OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+
+
 \chapter{The Deferred Correction for systems of ODEs}
 We will now apply the Deferred Correction method to the context of the integration of systems of ordinary differential equations.
 Let's consider the Cauchy problem
@@ -205,10 +213,10 @@ We are now going to put the problem in a Deferred Correction framework.
 Clearly in this case the parameter $\Delta$ is the time step $\Delta t$.
 Let's now define the operators $\lopdt^1$ and $\lopdt^2$ and the normed vector spaces $X$ and $Y$.
 \section{Derivation of the operators $\lopdt^1$ and $\lopdt^2$}
-As anticipated in the abstract context $\lopdt^2$ is a "tough" high-order implicit operator which provides the desired accuracy but that is difficult to solve, instead $\lopdt^1$ is a "naive" low-order explicit operator that is easy to solve but that is not enough accurate.
+As anticipated in the abstract context $\lopdt^2$ is a "tough" high-order implicit operator which provides the desired accuracy but that is difficult to solve, instead $\lopdt^1$ is a "naive" low-order explicit operator that is easy to solve but that is not enough accurate. When we write about the accuracy of these operators we mean the approximation accuracy of their solutions with respect to the (exact) solution of the general problem that we would like to solve which is in this case the system of ODEs \ref{ODE}.
 \subsection{Derivation of $\lopdt^2$}
-We are interested in an approximate solution at the time $t_0+\Delta t$ but in order to get it we will introduce a set of nodes in the interval the interval $[t_0,t_0+\Delta t]$ where we will consider an approximation of our sytem of ODES \ref{ODE}.
-The first node will coincide with $t_0$, the last one with $t_0+\Delta t$. Clearly we are interested just in the approximation of the solution in the last node but we will need also the approximations of the solution in the other nodes.
+We are interested in a high-order approximation of the solution to the Cauchy problem \ref{ODE} at the time $t_0+\Delta t$. In order to get it we introduce a set of nodes in the interval $[t_0,t_0+\Delta t]$ where we will consider the approximations of the values of the solution to our system of ODEs.
+The first node coincides with $t_0$, the last one with $t_0+\Delta t$. Clearly we are interested just in the approximation of the solution in the last node but we will need also the approximations of the solution in the other nodes.
 
 
 
@@ -217,7 +225,9 @@ $$t_0=t^0<t^1<\dots<t^M=t_0+\Delta t$$
 like in figure \ref{timesubintervals}. 
 \begin{observation}
 We can assume the nodes to be equispaced for simplicity's sake but this is not mandatory and the procedure would not change for any other arbitrary distribution of them. Anyway if we assume an equispaced distribution, the distance between two consecutive points is $\frac{\Delta t}{M}$.
+%However for very high order approximations it is better to choose carefully the distribution of the nodes because since we will perform an interpolation procedure in these nodes to obtain the operator $\lopdt^2$ we have to avoid the Runge phenomenon which occurs when we interpolate functions over sets of equispaced nodes. Anyway the formal accuracy just depends on the number of nodes and not on their distributions.
 \end{observation}
+
 \begin{figure}[hp] \centering{\includegraphics[scale=0.5]{timesubintervals.pdf}}
 \caption{Nodes in the interval $[t^0,t^0+\Delta t]$.}
 \label{timesubintervals}
@@ -230,8 +240,8 @@ We can assume the nodes to be equispaced for simplicity's sake but this is not m
 %\label{timesubintervals}
 %\end{figure}
 
-In each one of these nodes we will refer to $\uvec{u}(t^m)$ as the exact solution in $t^m$ and to $\uvec{u}^m$ as the approximate solution in the same node.
-Just for the first node we set $\uvec{u}^0=\uvec{u}(t_0)=\uvec{u}_0$ without any approximation, but obviously the exact soutions as well as the approximate solutions in the other nodes are unkonwns.
+We will refer to $\uvec{u}(t^m)$ as the exact solution in the node $t^m$ and to $\uvec{u}^m$ as the approximation of the solution in the same node.
+Just for the first node we set $\uvec{u}^0=\uvec{u}(t^0)=\uvec{u}(t_0)=\uvec{u}_0$ without any approximation, but obviously the exact solutions as well as the approximations of solution in the other nodes are unkonwns.
 
 
 An exact integration of the system of ODEs would result in
@@ -261,20 +271,20 @@ In figure \ref{lagrange} are shown the Lagrange polynomials corresponding to equ
 
 
 
-Thus if we substitute the approximation \ref{approx} in the formula got by the exact integration \ref{exint} we get a relation involving $\uvec{u}^m$ which is a $M+1$ order accurate approximation of $\uvec{u}(t^m)$
+Thus if we substitute the approximation \ref{approx} in the formula got by the exact integration \ref{exint} we get a relation involving $\uvec{u}^m$ which is a $(M+1)$-order accurate approximation of $\uvec{u}(t^m)$
 \begin{equation}
 \label{almosttrue}
 \uvec{u}^m-\uvec{u}^0-\int_{t^0}^{t^m}\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}(t^l))\psi^l(t)dt=\uvec{0}.
 \end{equation}
 \begin{observation}
-We cannot use this relation to calculate $\uvec{u}^m$ because we do not know the values $\uvec{u}(t^l)$. So we have not finished yet and \ref{almosttrue} is not yet our final operator $\lopdt^2$. We need to midify it a bit.
+We cannot use this relation to calculate $\uvec{u}^m$ because we do not know the values $\uvec{u}(t^l)$. So we have not finished yet and \ref{almosttrue} is not yet our final operator $\lopdt^2$. We need to modify it a bit.
 \end{observation}
-Before modifying \ref{almosttrue} to get something that we can actually use let's verify the claim on its $M+1$-order accuracy. 
+Before modifying \ref{almosttrue} to get something that we can actually "use", let's verify the claim on its $(M+1)$-order accuracy. 
 \begin{proposition}
-$\uvec{u}^m$ satisfying \ref{almosttrue} is a $M+1$ order accurate approximation of $\uvec{u}(t^m)$.
+$\uvec{u}^m$ satisfying \ref{almosttrue} is a $(M+1)$-order accurate approximation of $\uvec{u}(t^m)$.
 \end{proposition}
 \begin{proof}
-Let's compute $\uvec{u}(t^m)-\uvec{u}^m$ with $\uvec{u}^m$ got by \ref{almosttrue}. From \ref{exint}, \ref{almosttrue} and the $M$-order accuracy on the approximation of $\uvec{G}(t,\uvec{u}(t))$ i.e. equation \ref{approx} we have
+Let's compute $\uvec{u}(t^m)-\uvec{u}^m$ with $\uvec{u}^m$ got by \ref{almosttrue}. From \ref{exint}, \ref{almosttrue} and the $M$-order accuracy on the approximation of $\uvec{G}(t,\uvec{u}(t))$ expressed in equation \ref{approx} we have
 $$\uvec{u}(t^m)-\uvec{u}^m=\uvec{u}^0+\int_{t^0}^{t^m}\uvec{G}(t,\uvec{u}(t))dt-\uvec{u}^0-\int_{t^0}^{t^m}\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}(t^l))\psi^l(t)dt=$$
 $$
 =\int_{t^0}^{t^m} \left[ \uvec{G}(t,\uvec{u}(t))-\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}(t^l))\psi^l(t) \right]dt=\int_{t^0}^{t^m}O(\Delta t^{M+1})dt=O(\Delta t^{M+2}).$$
@@ -282,20 +292,20 @@ $$
 
 As we said before we do not have the values $\uvec{u}(t^l)$ and we need to modify \ref{almosttrue} to get somthing which can actually be used to get $\uvec{u}^m$. 
 
-The idea is to use $\uvec{u}^l$ in place of them, thus getting an implicit formulation. By doing this we do not lose any accuracy as we will see in a few lines. The implicit formulation that allows us to get $\uvec{u}^m$ with $M+1$-order accuracy reads then
+The idea is to use the approximated values $\uvec{u}^l$ in place of them, thus getting an implicit formulation. By doing this we do not lose any accuracy as we will see in a few lines. The implicit formulation that allows us to get $\uvec{u}^m$ with $M+1$-order accuracy reads then
 \begin{equation}
 \label{true}
 \uvec{u}^m-\uvec{u}^0-\int_{t^0}^{t^m}\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}^l)\psi^l(t)dt=\uvec{0} \quad \forall m=1,2,\dots,M
 \end{equation}
-This is the operator $\lopdt^2$ we were looking for but before going ahead and rearrange it in a more clever way let's verify that, despite the extra approximation introduced, the order of accuracy is still $M+1$.
+This is the operator $\lopdt^2$ that we were looking for but before going ahead and rearrange it in a more clever way let's verify that, despite the extra approximation introduced with respect to \ref{almosttrue}, the order of accuracy is still $M+1$.
 \begin{proposition}
-$\uvec{u}^m$ satisfying \ref{true} is a $M+1$-order accurate approximation of $\uvec{u}(t^m)$.
+$\uvec{u}^m$ satisfying \ref{true} is a $(M+1)$-order accurate approximation of $\uvec{u}(t^m)$.
 \end{proposition}
 \begin{proof}
 Let's first show that, by substituiting $\uvec{u}^l$ to $\uvec{u}(t^l)$, we are making an $O(\Delta t^{M+2})$ approximation on $\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}(t^l))\psi^l(t)$.
-By applying the triangular inequality and remembering that the Lagrangian functions are bounded by a constant\footnote{Once that the nodes are fixed the Lagrangian functions are continuous functions over a compact set and for the Weierstrass theorem they are bounded.}, say $C$, we get
+By applying the triangular inequality and remembering that the Lagrangian functions are bounded in absolute value by a positive constant\footnote{Once that the nodes are fixed the Lagrangian functions are continuous functions over a compact set and for the Weierstrass theorem they are bounded.}, say $C$, we get
 $$\norm{  \sum_{l=0}^{M} \left[ \uvec{G}(t^l,\uvec{u}^l)- \uvec{G}(t^l,\uvec{u}(t^l)) \right]  \psi^l(t)}_\infty \leq C \sum_{l=0}^{M} \norm{\uvec{G}(t^l,\uvec{u}^l)- \uvec{G}(t^l,\uvec{u}(t^l))}_\infty$$
-and due to the Lipschitz-continuity of the flux with respect to $\uvec{u}$ uniformly with respect to $t$ with Lispchitz constant $L$ and the fact that $\uvec{u}^l$ is an $O(\Delta t^{M+2})$ order approximation of $\uvec{u}(t^l)$ we get
+and due to the Lipschitz-continuity of the flux with respect to $\uvec{u}$ uniformly with respect to $t$ with Lispchitz constant $L$ and the fact that $\uvec{u}^l$ is a $(M+1)$-order approximation of $\uvec{u}(t^l)$ we get
 $$C \sum_{l=0}^{M} \norm{\uvec{G}(t^l,\uvec{u}^l)- \uvec{G}(t^l,\uvec{u}(t^l))}_\infty \leq C L \sum_{l=0}^{M} \norm{\uvec{u}^l-\uvec{u}(t^l)}_\infty \leq CL \sum_{l=0}^{M} O(\Delta t^{M+2})=O(\Delta t^{M+2}).$$
 In the end we get
 \begin{equation}
@@ -311,9 +321,9 @@ and by using again \ref{approx} we have our desired result on the accuracy
 $$\int_{t^0}^{t^m} \left[ \uvec{G}(t,\uvec{u}(t))-\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}(t^l))\psi^l(t)+O(\Delta t^{M+2}) \right]dt=\int_{t^0}^{t^m} \left[ O(\Delta t^{M+1})+O(\Delta t^{M+2}) \right]dt=$$
 $$=O(\Delta t^{M+2})+O(\Delta t^{M+3})=O(\Delta t^{M+2}).$$
 \end{proof}
-Coming back to our initial goal, we will now define the operator $\lopdt^2$ directly from \ref{true} which we recall for clarity
+Coming back to our initial goal, we will now define the operator $\lopdt^2$ directly from \ref{true} which is recalled for clarity
 $$\uvec{u}^m-\uvec{u}^0-\int_{t^0}^{t^m}\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}^l)\psi^l(t)dt=\uvec{0} \quad \forall m=1,2,\dots,M$$ 
-Let's first recast it in a clever way by noticing that the vectors $\uvec{G}(t^l,\uvec{u}^l)$ do not depend on time so we can put the finite sum out of the integral as well as these vectors (even if they are unknown because we don't know $\uvec{u}^l$). We thus get
+Let's first recast it in a clever way by noticing that the vectors $\uvec{G}(t^l,\uvec{u}^l)$ do not depend on time so we can put the finite sum out of the integral as well as these vectors (even if, we remark, they are unknown because we don't know $\uvec{u}^l$). We thus get
 $$\uvec{u}^m-\uvec{u}^0-\sum_{l=0}^{M} \uvec{G}(t^l,\uvec{u}^l)\int_{t^0}^{t^m}\psi^l(t)dt=\uvec{0} \quad \forall m=1,2,\dots,M$$ 
 The Lagrangian polynomial functions $\psi^l(t)$ are known as well as the nodes $t^m$ so we can perform exactly the integrals and set
 $$\int_{t^0}^{t^m}\psi^l(t)dt=\Delta t \int_{0}^{\frac{t^m-t^0}{\Delta t}}\psi^l\left(\Delta t s+t^0\right)ds=\Delta t\theta^m_l \quad \forall m=1,2,\dots,M \quad \forall l=0,1,\dots,M.$$
@@ -323,7 +333,7 @@ Notice that we made a change of variable which transformed the interval $[t^0,t^
 \begin{observation}
 In particular in the case of equispaced nodes we have
 $$\theta^m_l=\int_{0}^{\frac{m}{M}}\hat{\psi}^l (s)ds \quad \forall m=1,2,\dots,M \quad \forall l=0,1,\dots,M$$
-where $\hat{\psi}^l \quad l=0,1,\dots,M$ are the Lagrangian functions associated to the $M+1$ nodes $0<\frac{1}{M}<\frac{2}{M}<\dots<\frac{M-1}{M}<1.$
+where $\hat{\psi}^l \quad l=0,1,\dots,M$ are the Lagrangian functions associated to the $M+1$ nodes $0<\frac{1}{M}<\frac{2}{M}<\dots<\frac{M-1}{M}<1$ in the reference interval $[0,1]$.
 \end{observation}
 So we have
 $$\uvec{u}^m-\uvec{u}^0-\Delta t \sum_{l=0}^{M} \theta^m_l \uvec{G}(t^l,\uvec{u}^l)=\uvec{0} \quad \forall m=1,2,\dots,M$$ 
@@ -351,11 +361,11 @@ $$\underline{\uvec{u}}=\left(
 We equip $X=Y=\mathbb{R}^{(M \times N)}$ with the infinity norm $\norm{\cdot}_\infty$.
 Let's make some observations to make things clearer.
 \begin{observation}
-$M$ is the number of nodes $t^m$ in $[t_0,t_0+\Delta t]$ in which we do not know the solution to the ODEs system i.e. all the nodes apart from $t^0$ (in which we already know the exact solution $\uvec{u}_0$). Instead $N$ is the number of components of $\uvec{u}$ i.e. the number of equations of our ODEs system.
+$M$ is the number of nodes $t^m$ in $[t_0,t_0+\Delta t]$ in which we do not know the solution to the ODEs system i.e. all the nodes apart from $t^0$ (in this node we already know the exact solution $\uvec{u}_0$). Instead $N$ is the number of components of $\uvec{u}$ i.e. the number of equations of our ODEs system.
 \end{observation}
 \begin{observation}
-It is very important to understand that in \ref{l2ODE} we are making a little change of notation. The vector $\underline{\uvec{u}}$ is the general argument of the operator $\lopdt^2$ and is obviously not in general its solution, it is just a not specified $M \times N$-dimesional vector.
-We are now referring to the vector $\uvec{u}^m$ no more as the approximated solution in $t^m$ but as $N$ components of the general argument $\underline{\uvec{u}}$ of $\lopdt^2$. We get our approximation of the solution if we solve the operator i.e. if find $\usoldt$ s.t. $\lopdt^2(\usoldt)=\uvec{0}$.
+It is very important to understand that in \ref{l2ODE} we are making a little change of notation. The vector $\underline{\uvec{u}}$ is the general argument of the operator $\lopdt^2$ and is obviously not in general its solution, it is just a not specified $(M \times N)$-dimesional vector.
+We are now referring to the vector $\uvec{u}^m$ no more as the approximation of the solution in $t^m$ but as $N$ components of the general argument $\underline{\uvec{u}}$ of $\lopdt^2$. We get our approximation of the solution if we solve the operator i.e. if find $\usoldt$ s.t. $\lopdt^2(\usoldt)=\uvec{0}$.
 If we have 
 $$\usoldt=\left(
    \begin{array}{ccc}
@@ -366,10 +376,10 @@ $$\usoldt=\left(
    \uvec{u}^1_\Delta
    \end{array}
 \right)$$ 
-then we can say that $\uvec{u}^m_\Delta$ is our $M+1$-order accurate approximated solution in $t^m$ but in general $\uvec{u}^m$ is just a not specified $N$-dimensional real vector.
+then we can say that $\uvec{u}^m_\Delta$ is a $(M+1)$-order accurate approximation of the solution in $t^m$ but in general $\uvec{u}^m$ is just a not specified $N$-dimensional real vector.
 \end{observation}
 \begin{observation}
-The operator $\lopdt^2$ is implicit and $M+1$-order accurate. Its solution, i.e. $\usoldt$ s.t. $\lopdt^2(\usoldt)=\uvec{0}$, is made by all the solutions $\usol^m$ to \ref{true} which are  $M+1$-order accurate approximations of the solution of the ODEs system in the nodes $t^m$ $m=1,2,\dots,M$.
+The operator $\lopdt^2$ is implicit and $(M+1)$-order accurate. Its solution, i.e. $\usoldt$ s.t. $\lopdt^2(\usoldt)=\uvec{0}$, is made by all the solutions $\usol^m$ to \ref{true} which are  $(M+1)$-order accurate approximations of the solution of the ODEs system in the nodes $t^m$ $m=1,2,\dots,M$.
 \end{observation}
 \begin{observation}
 \label{u0}
@@ -377,11 +387,11 @@ $\uvec{u}^0$ is not an unkonwn and for this reason it is not a argument of the o
 \end{observation}
 \begin{observation}
 \label{obsnorm}
-The space $X=Y=\mathbb{R}^{(M \times N)}$ is finite dimensional so all the norms that we can define on it are equivalent. Despite this, the choice of the norms is crucial and not trivial. This is due to the fact that the constants $\alpha_1$ and $\alpha_2$ must not depend on $\delta$. If we choose wrong norms we may have that the sub-coercivity of $\lopd^1$ is true but not the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$. In particular, as it will be soon clear, the first property is almost trivial to verify, while the second will need more attention to be proved. In general we have to take advantage of this fact by designing the norms $\norm{\cdot}_X$ and $\norm{\cdot}_Y$ in such a way that the inequality of the sub-coercivity property of $\lopd^1$ results in an equality. The basic idea is that we have to satisfy two "conflicting property": roughly speaking, the sub-coercivity property of $\lopd^1$ means that we need the norm $\norm{\cdot}_X$ to be "smaller" than the norm $\norm{\cdot}_X$ while vice versa the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$ means the exact opposite. Again, since the first property is easier to be verified we need to design the norms to relax it at most, this results essential for the second property to be verified. This is the the general guideline to follow in the designing of two norms satisfying the desired properties if we wish to apply the Deferred Correction to any context. Anyway this will be clearer when we will consider the the application to the balance laws.
+The space $X=Y=\mathbb{R}^{(M \times N)}$ is finite dimensional so all the norms that we can define on it are equivalent. Despite this, the choice of the norms is crucial and not trivial. This is due to the fact that the constants $\alpha_1$ and $\alpha_2$ must not depend on $\Delta$. If we choose wrong norms we may have that the sub-coercivity of $\lopd^1$ is true but not the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$. In particular, as it will be soon clear, the first property is almost trivial to verify, while the second will need more attention to be proved. In general we have to take advantage of this fact by designing the norms $\norm{\cdot}_X$ and $\norm{\cdot}_Y$ in such a way that the inequality of the sub-coercivity property of $\lopd^1$ results in an equality. The basic idea is that we have to satisfy two "conflicting properties": roughly speaking, the sub-coercivity property of $\lopd^1$ means that we need the norm $\norm{\cdot}_X$ to be "smaller" than the norm $\norm{\cdot}_Y$ while vice versa the Lipschitz-continuity-like condition of $\lopd^1-\lopd^2$ means the exact opposite. Again, since the first property is easier to be verified we need to design the norms to relax it at most, this results essential for the second property to be verified. This is the the general guideline to follow in the designing of two norms satisfying the desired properties if we wish to apply the Deferred Correction to any context. Anyway this will be clearer when we will consider the the application to the balance laws.
 \end{observation}
 \begin{observation}
-Let's remark that in principle we are not interested in all the components of $\lopdt^2$: we want an high-order approximation of the solution in the last node $t^M=t^0+\Delta t$. Despite this, the construction of the operator is strictly based on the approximation of the solution also in the other nodes. 
-Let's also notice that the accuracy of each component of the solution of $\lopdt^2$ with respect to the exact solution to our initial problem \ref{ODE} in the corresponding node is $M+1$, not just for the component referred to the last node. Every component $\uvec{u}^m_\Delta$ of the solution $\usoldt$ is a $M+1$-order approximation of the solution in the correpsonding node $t^m$.
+Let's remark that in principle we are not interested in all the components of $\lopdt^2$: we want a high-order approximation of the solution in the last node $t^M=t^0+\Delta t$. Despite this, the construction of the operator is strictly based on the approximation of the solution also in the other nodes. 
+Let's also notice that the accuracy of each component of the solution of $\lopdt^2$ with respect to the exact solution to our initial problem \ref{ODE} in the corresponding node is $M+1$, not just for the component referred to the last node. Every component $\uvec{u}^m_\Delta$ of the solution $\usoldt$ is a $(M+1)$-order approximation of the exact solution to \ref{ODE} in the correpsonding node $t^m$.
 \end{observation}
 \subsection{Derivation of $\lopdt^1$}
 Also the operator $\lopdt^1$, just like $\lopdt^2$, will involve the approximations of the solution in the nodes $t^m$ $m=1,2,\dots,M$ and not just in the last one.
@@ -400,7 +410,7 @@ The approximate solution $\uvec{u}^m$ got through the Euler method \ref{Euler} i
 \begin{proof}
 Again we consider the difference between the exact solution $\uvec{u}(t^m)$ to our ODEs system \ref{ODE} and $\uvec{u}^m$ got from \ref{Euler}. Through a first order Taylor expansion of $\uvec{u}(t)$ and from the fact that $\frac{d}{dt}\uvec{u}(t) = \uvec{G}(t,\uvec{u}(t))$ we have
 $$\uvec{u}(t^m)-\uvec{u}^m=\uvec{u}^0+\uvec{G}(t^0,\uvec{u}^0)(t^m-t^0)+O(\Delta t^2)-\uvec{u}^0-\Delta t \beta^m \uvec{G}(t^0,\uvec{u}^0)=O(\Delta t^2)$$
-because $\uvec{u}^0=\uvec{u}(t_0)=\uvec{u}_0$ and $\beta^m=\frac{t^m-t^0}{\Delta t}$.
+because $\uvec{u}^0=\uvec{u}(t^0)=\uvec{u}(t_0)=\uvec{u}_0$ and $\beta^m=\frac{t^m-t^0}{\Delta t}$.
 \end{proof}
 Directly from \ref{Euler} we get our explicit, low-order, "naive" operator
 $\lopdt^2: \mathbb{R}^{(M \times N)} \rightarrow \mathbb{R}^{(M \times N)}$ defined as
@@ -428,14 +438,14 @@ $$\underline{\uvec{u}}=\left(
 Let's remind that the norm chosen on $X=Y=\mathbb{R}^{(M \times N)}$ is the infinity norm $\norm{\cdot}_\infty$. We can make observations analogue to the ones that we made for the operator $\lopdt^2$.
 \begin{observation}
 In \ref{l1ODE} the vector $\underline{\uvec{u}}$ is the general argument of the operator $\lopdt^1$ and thus not in general its solution.
-We are now referring to the vector $\uvec{u}^m$ as $N$ components of the general argument $\underline{\uvec{u}}$ of $\lopdt^1$ and not as the approximate solution in $t^m$ that we would get by solving the operator.
+We are now referring to the vector $\uvec{u}^m$ as $N$ components of the general argument $\underline{\uvec{u}}$ of $\lopdt^1$ and not as the first order approximation of the exact solution in $t^m$ that we would get by solving the operator.
 \end{observation}
 \begin{observation}
-The operator $\lopdt^1$ is explicit and easy to solve but just first-order accurate. Its solution is made by all the solutions to \ref{Euler} which are second-order accurate approximations of the solution of the ODEs system in the nodes $t^m$ $m=1,2,\dots,M$.
+The operator $\lopdt^1$ is explicit and easy to solve but just first-order accurate. Its solution is made by all the solutions to \ref{Euler} which are first-order accurate approximations of the solution of the initial system od ODEs in the nodes $t^m$ $m=1,2,\dots,M$.
 \end{observation}
 \begin{observation}
 \label{u0bis}
-As always, $\uvec{u}^0$ is not an unkonwn and for this reason it is not a argument of the operator $\lopdt^1$, it is a known vector embedded in the operator.
+As in the previous case, $\uvec{u}^0$ is not an unkonwn and for this reason it is not a argument of the operator $\lopdt^1$, it is a known vector embedded in the operator.
 \end{observation}
 \begin{observation}
 Also in this case let's remark that the solution to the operator $\lopdt^1$ would be first-order accurate in each of its components. 
@@ -459,7 +469,7 @@ $$\underline{\uvec{u}}^{(p)}=\left(
    \uvec{u}^{1,(p)}
    \end{array}
 \right) \quad p=1,2,\dots,P$$
-is the result of the $p$ iteration which is made by $M$ components $\uvec{u}^{m,(p)}$ corresponding to the approximate solutions in the subtimesteps $t^m$ $m=1,2,\dots,M$. Each one of them is itself a vector with $N$ components where $N$ is the number of equations of the system of ODEs \ref{ODE}.
+is the result of the $p$ iteration which is made by $M$ components $\uvec{u}^{m,(p)}$ corresponding to the approximations of the solution in the subtimesteps $t^m$ $m=1,2,\dots,M$. Each one of them is itself a vector with $N$ components where $N$ is the number of equations of the system of ODEs \ref{ODE}.
 In order to make things clearer let's look at the grid in figure \ref{grid}. On the ordinate axis we have the iterations while on the abscissa axis we have the subtimesteps.
 \begin{figure}[hp] \centering{\includegraphics[scale=0.5]{grid.pdf}}
 \caption{Grid of the iterations.}
@@ -475,7 +485,7 @@ $$\begin{pmatrix}
         \uvec{u}^{m,(p-1)}-\uvec{u}^0-\Delta t \beta^m \uvec{G}(t^0,\uvec{u}^0)\\
         \vdots\\
   \end{pmatrix}+$$
-  $$+\begin{pmatrix}
+  $$-\begin{pmatrix}
         \vdots\\
         \uvec{u}^{m,(p-1)}-\uvec{u}^0-\Delta t \sum_{l=0}^{M} \theta^m_l \uvec{G}(t^l,\uvec{u}^{l,(p-1)})\\
         \vdots\\
@@ -503,11 +513,11 @@ $$\underline{\uvec{u}}^{(0)}=\left(
    \vdots\\
    \uvec{u}^0\\
    \end{array}\right)$$
-i.e. we assume for every component $m=1,2,\dots,M$ of the argument, $\uvec{u}^{m,(0)}=\uvec{u}^0$.
+i.e. we assume for every component $m=1,2,\dots,M$ of the argument, $\uvec{u}^{m,(0)}=\uvec{u}^0$ which is known.
 \end{observation}
 \begin{observation}
 \label{compactness}
-When we write $\uvec{u}^{0,(p)}$ in order to evaluate $\sum_{l=0}^{M} \theta^m_l \uvec{G}(t^l,\uvec{u}^{l,(p-1)})$ for $m=1,2,\dots,M$ we clearly mean $\uvec{u}^0$. As we already underlined in the observations \ref{u0} and \ref{u0bis}, the components $\uvec{u}^m$ of the global argument $\underline{\uvec{u}}^m$ of $\lopdt^1$ and $\lopdt^2$ correspond to the approximate solutions to the system of ODEs \ref{ODE} in the nodes $t^m$ $m=1,2,\dots,M$ where the solution is unkonwn. Instead in $t^0$ we have $\uvec{u}^0=\uvec{u}(t_0)=\uvec{u}_0$. The vector $\uvec{u}^0$ is fixed, it is part of the initial probem, it's not a variable. We should in principle write
+When we write $\uvec{u}^{0,(p)}$ in order to evaluate $\sum_{l=0}^{M} \theta^m_l \uvec{G}(t^l,\uvec{u}^{l,(p-1)})$ for $m=1,2,\dots,M$ we clearly mean $\uvec{u}^0$. As we already underlined in the observations \ref{u0} and \ref{u0bis}, the components $\uvec{u}^m$ of the global argument $\underline{\uvec{u}}^m$ of $\lopdt^1$ and $\lopdt^2$ correspond to the approximate solutions to the system of ODEs \ref{ODE} in the nodes $t^m$ $m=1,2,\dots,M$ where the solution is unkonwn. Instead in $t^0$ we have $\uvec{u}^0=\uvec{u}(t^0)=\uvec{u}(t_0)=\uvec{u}_0$. The vector $\uvec{u}^0$ is fixed, it is part of the initial probem, it's not a variable. We should in principle write
 $$\sum_{l=0}^{M} \theta^m_l \uvec{G}(t^l,\uvec{u}^{l,(p-1)})=\theta^m_0 \uvec{G}(t^0,\uvec{u}^0)+\sum_{l=1}^{M} \theta^m_l \uvec{G}(t^l,\uvec{u}^{l,(p-1)})$$
 but to keep the notation more compact we avoid this and we set 
 $$\uvec{u}^{0,(p)}=\uvec{u}^0 \quad p=0,1,\dots,P.$$
@@ -515,27 +525,28 @@ In practice we are making an abuse of notation: we are using the notation throug
 \end{observation}
 Now the algorithm is clear and we can focus on the optimal number of iterations to get the highest possible accuracy.
 
-As already anticipated, at least in part, in observation \ref{optimaliterations} the Deferred Correction doesn't provide an approximation of the exact solution (in the nodes $t^m$ with $m=1,2,\dots,M$) to our ODEs system but an approximation of the solution to $\lopdt^2$ which is itself a $M+1$-order approximation of the exact solution. And it would be useless to make a "too high" number of iterations to approximate it with an accuracy order higher than $M+1$. To be clearer, if we define the vector
+As already anticipated, at least in part, in observation \ref{optimaliterations} the Deferred Correction doesn't provide "directly" an approximation of the exact solution (in the nodes $t^m$ with $m=1,2,\dots,M$) to our ODEs system but an approximation of the solution to $\lopdt^2$ which is itself a $(M+1)$-order approximation of the exact solution. And it would be useless to make a "too high" number of iterations to approximate it with an accuracy order higher than $M+1$. To be clearer, if we define the vector
 $$\underline{\uvec{u}}^{ex}=\left(
    \begin{array}{ccc}
-   \uvec{u}^{ex}(t^M)\\
+   \uvec{u}(t^M)\\
    \vdots\\
-   \uvec{u}^{ex}(t^m)\\
+   \uvec{u}(t^m)\\
    \vdots\\
-   \uvec{u}^{ex}(t^1)
+   \uvec{u}(t^1)
    \end{array}
 \right)$$
-made by the exact solutions to our ODEs system in the nodes $t^m$ $m=1,2,\dots,M$, the Deferred Correction doesn't approximate directly it but $\usoldt$ which is the solution to $\lopdt^2$ and it's a $M+1$-order accurate approximation of $\underline{\uvec{u}}^{ex}$ as we can see from the next proposition.
+made by the exact solution to our ODEs system evaluated in the nodes $t^m$ $m=1,2,\dots,M$, the Deferred Correction does not approximate directly it but $\usoldt$ which is the solution to $\lopdt^2$ and a $(M+1)$-order accurate approximation of $\underline{\uvec{u}}^{ex}$.
+This fact is shown in the next proposition.
 \begin{proposition}
 \label{acc}
 The vector $\underline{\uvec{u}}^{(P)}$ got from the final iteration $P$ of the Deferred Correction algorithm \ref{DeCODE} is a $P$-order approximation of $\usoldt$, the solution of the operator $\lopdt^2$.
 \end{proposition}
 \begin{proof}
 From our first abstract accuracy estimate \ref{accuracyestimate} we have in this case
-$$\norm{\underline{\uvec{u}}^{(P)}-\usoldt}_\infty \leq \left( \Delta \frac{\alpha_2}{\alpha_1} \right)^P\norm{\underline{\uvec{u}}^{(0)}-\usoldt}_\infty.$$
+$$\norm{\underline{\uvec{u}}^{(P)}-\usoldt}_\infty \leq \left( \Delta t \frac{\alpha_2}{\alpha_1} \right)^P\norm{\underline{\uvec{u}}^{(0)}-\usoldt}_\infty.$$
 We just suffice to prove that $\norm{\underline{\uvec{u}}^{(0)}-\usoldt}_\infty$ is $O(\Delta t)$.
 To do this let's consider $\usoldto$ solution to $\lopdt^1$ i.e. such that $\lopdt^1(\usoldto)=\uvec{0}$.
-As we pointed out several times $\lopdt^1$ is a first-order accurate operator in the sense that its solution is first-order accurate with respect to the the vector $\uex$ of the exact solutions in the nodes $t^m$ $m=1,2,\dots,M$. Moreover it is explicit and very easy to solve. Directly from its definition \ref{l1ODE}, by solving $\lopdt^1(\usoldto)=\uvec{0}$, we have
+As we pointed out several times $\lopdt^1$ is a first-order accurate operator in the sense that its solution is first-order accurate with respect to the the vector $\uex$ containing the evaluations of the exact solution in the nodes $t^m$ $m=1,2,\dots,M$. Moreover it is explicit and very easy to solve. Directly from its definition \ref{l1ODE}, by solving $\lopdt^1(\usoldto)=\uvec{0}$, we have
 
 
 $$\usoldto=\begin{pmatrix}
@@ -556,7 +567,7 @@ $$\usoldto=\begin{pmatrix}
 
 
 
-Instead the operator $\lopdt^2$ is $M+1$-order accurate since its solution $\usoldt$ is $M+1$-order accurate with respect to $\uex$. Thus, by adding and subtracting $\uex$ and $\usoldto$ and by applying the triangular inequality we have
+Instead the operator $\lopdt^2$ is $(M+1)$-order accurate since its solution $\usoldt$ is $(M+1)$-order accurate with respect to $\uex$. Thus, by adding and subtracting $\uex$ and $\usoldto$ and by applying the triangular inequality we have
 $$\norm{\underline{\uvec{u}}^{(0)}-\usoldt}_\infty \leq \norm{\underline{\uvec{u}}^{(0)}-\usoldto}_\infty+\norm{\usoldto-\uex}_\infty+\norm{\uex-\usoldt}_\infty=$$
 $$=\norm{\underline{\uvec{u}}^{(0)}-\usoldto}_\infty+O(\Delta t^2)+O(\Delta t^{M+2}).$$
 From a direct computation we have $\norm{\underline{\uvec{u}}^{(0)}-\usoldto}=O(\Delta t)$ in fact
@@ -582,23 +593,23 @@ $$\usoldto-\underline{\uvec{u}}^{(0)}=\begin{pmatrix}
 Remember that the coefficients $\beta^m$ are normalized coefficients that depend just on the distribution of the nodes $t^m$ but not on $\Delta t$ and $\uvec{G}(t^0,\uvec{u}^0)$ is a known constant vector.
 It follows that $\norm{\underline{\uvec{u}}^{(P)}-\usoldt}_\infty=O(\Delta t^{P+1})$ which is the thesis.
 \end{proof}
-Thus we have that $\underline{\uvec{u}}^{(P)}$, resulting from the Deferred Correction procedure with $P$ iterations, is a $P$-order accurate approximation of the solution $\usoldt$ to $\lopdt^2$ which is itself a $M+1$-order approximation of the vector $\underline{\uvec{u}}^{ex}$ made by the exact solutions in the nodes $m=1,2,\dots,M$. From this we immediately see that the highest possible accuracy with respect to $\underline{\uvec{u}}^{ex}$ is bounded by $M+1$ and it is reached with a number of iterations at least equal to $M+1$.
+Thus we have that $\underline{\uvec{u}}^{(P)}$, resulting from the Deferred Correction procedure with $P$ iterations, is a $P$-order accurate approximation of the solution $\usoldt$ to $\lopdt^2$ which is itself a $(M+1)$-order approximation of the vector $\underline{\uvec{u}}^{ex}$ made by the evaluations of the exact solution in the nodes $m=1,2,\dots,M$. From this we immediately see that the highest possible accuracy with respect to $\underline{\uvec{u}}^{ex}$ is bounded by $M+1$ and it is reached with a number of iterations at least equal to $M+1$.
 \begin{proposition}
-The accuracy of $\underline{\uvec{u}}^{(P)}$, resulting from the Deferred Correction procedure with $P$ iterations, with respect to the vector $\underline{\uvec{u}}^{ex}$ of the exact solutions in the nodes $m=1,2,\dots,M$ is $\min \left\lbrace P, M+1 \right\rbrace$.
+The accuracy of $\underline{\uvec{u}}^{(P)}$, resulting from the Deferred Correction procedure with $P$ iterations, with respect to the vector $\underline{\uvec{u}}^{ex}$ containing the evaluations of the exact solution in the nodes $m=1,2,\dots,M$ is $\min \left\lbrace P, M+1 \right\rbrace$.
 \end{proposition}
 \begin{proof}
 Let's consider $\norm{\underline{\uvec{u}}^{(P)}-\underline{\uvec{u}}^{ex}}_\infty$. We add and subtract $\usoldt$, solution of $\lopdt^2$, and use the trianguar inequality, thus we have
 $$\norm{\underline{\uvec{u}}^{(P)}-\underline{\uvec{u}}^{ex}}_\infty \leq \norm{\underline{\uvec{u}}^{(P)}-\usoldt}_\infty+\norm{\usoldt-\underline{\uvec{u}}^{ex}}_\infty.$$
-As we repeated several times, since the operator $\lopdt^2$ is $M+1$ order accurate we have
+As we repeated several times, since the operator $\lopdt^2$ is $(M+1)$-order accurate we have
 $$\norm{\usoldt-\underline{\uvec{u}}^{ex}}_\infty=O(\Delta t^{M+2})$$
-and since, due to the proposition \ref{acc}, $\underline{\uvec{u}}^{(P)}$ is  $P$-order approximation of $\usoldt$ it holds
+and since, due to the proposition \ref{acc}, $\underline{\uvec{u}}^{(P)}$ is a $P$-order approximation of $\usoldt$ it holds
 $$\norm{\underline{\uvec{u}}^{(P)}-\usoldt}_\infty=O(\Delta t^{P+1}).$$
 Thus we can write
 $$\norm{\underline{\uvec{u}}^{(P)}-\underline{\uvec{u}}^{ex}}_\infty \leq O(\Delta t^{M+2})+O(\Delta t^{P+1})$$
 which is the thesis.
 \end{proof}
 \begin{observation}
-If we increase $P$ we increase the accuracy of $\underline{\uvec{u}}^{(P)}$ with respect to $\usoldt$ which is a $M+1$-order approximation of $\underline{\uvec{u}}^{ex}$. Since our aim is approximating $\underline{\uvec{u}}^{ex}$ and not $\usoldt$, increasing the number of iterations is useful only until we reach $M+1$-order accuracy. The optimal number of iterations is thus $P=M+1$, any other extra iteration would just be a waste of computational resources. So we set $P=M+1$, anyway to be more general, we will continue to use $P$ to refer to the number of iterations keeping in mind that the accuracy of $\underline{\uvec{u}}^{(P)}$ with respect to $\underline{\uvec{u}}^{ex}$ is $\min \left\lbrace P, M+1 \right\rbrace$ and that the most convenient number of iterations is $P=M+1$ which is the small number of iterations to provide $M+1$ accuracy.
+If we increase $P$ we increase the accuracy of $\underline{\uvec{u}}^{(P)}$ with respect to $\usoldt$ which is a $(M+1)$-order approximation of $\underline{\uvec{u}}^{ex}$. Since our aim is approximating $\underline{\uvec{u}}^{ex}$ and not $\usoldt$, increasing the number of iterations is useful only until we reach $(M+1)$-order accuracy. The optimal number of iterations is thus $P=M+1$, any other extra iteration would just be a waste of computational resources so we set $P=M+1$. Anyway to be more general, we will continue to use $P$ to refer to the number of iterations keeping in mind that the accuracy of $\underline{\uvec{u}}^{(P)}$ with respect to $\underline{\uvec{u}}^{ex}$ is $\min \left\lbrace P, M+1 \right\rbrace$ and that the most convenient number of iterations is $P=M+1$ which is the small number of iterations to provide $M+1$ accuracy.
 \end{observation}
 \begin{observation}
 Despite the esteem on the accuracy of $\underline{\uvec{u}}^{(P)}$  being uniform with respect to all its components we are just interested in the component associated with the node $M$ becasuse our aim is to have an approximation of the solution to the system of ODEs \ref{ODE} in $t^M=t+\Delta t$. So at the end we take $\uvec{u}^{M,(P)}$ as our desired approximated solution at the time $t+\Delta t$.
@@ -633,8 +644,7 @@ $$\underline{\uvec{v}}=\left(
    \uvec{w}^1
    \end{array}
 \right)$$
-with $\uvec{v}^m$ and $\uvec{w}^m$ $m=1,2,\dots,M$ generic $N$-dimensional vectors.
-and prove the other two conditions. As anticipated in the observation \ref{obsnorm}, the sub-coercivity of $\lopdt^1$ will be straightforward instead the Lipschitz-continuity-like condition of $\lopdt^1-\lopdt^2$ will be less trivial (even more delicate in the application of the Deferred Correction to the balance laws).
+with $\uvec{v}^m$ and $\uvec{w}^m$ $m=1,2,\dots,M$ generic $N$-dimensional vectors and prove the other two conditions. As anticipated in the observation \ref{obsnorm}, the sub-coercivity of $\lopdt^1$ will be straightforward instead the Lipschitz-continuity-like condition of $\lopdt^1-\lopdt^2$ will be less trivial (even more delicate in the application of the Deferred Correction to the balance laws).
 \subsection{Sub-coercivity of $\lopdt^1$}
 From a direct computation we have
 $$\lopdt^1(\underline{\uvec{v}})-\lopdt^1(\underline{\uvec{w}}) =             \begin{pmatrix}
@@ -693,22 +703,21 @@ $$=\left[\begin{pmatrix}
 \end{pmatrix}\right]
 \end{equation}
 where clearly $\uvec{v}^0=\uvec{w}^0=\uvec{u}^0$. As we pointed out several times expecially in the derivation of the operators $\lopdt^1$ and $\lopdt^2$, for example in the observations \ref{u0} and \ref{u0bis}, $\uvec{u}^0$ is not an unknown, it is a given vector, it is "part" of the problem and is embedded in the operators. We use $\uvec{v}^0$ and $\uvec{w}^0$ instead of $\uvec{u}^0$ for the sake of compactness as we did for $\uvec{u}^{0,(p)}$. The reader is referred to the observation \ref{compactness} for more clarity.
-By elemntary algebra \ref{intermezzo} becomes
-Again we consider a direct computation
-$$\left[\lopdt^1(\underline{\uvec{v}})-\lopdt^2(\underline{\uvec{v}})\right]-\left[\lopdt^1(\underline{\uvec{w}})-\lopdt^2(\underline{\uvec{w}})\right]=\Delta t \begin{pmatrix} 
-        \sum_{l=0}^{M} \theta^M_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
+By elementary algebra \ref{intermezzo} becomes
+$$\left[\lopdt^1(\underline{\uvec{v}})-\lopdt^2(\underline{\uvec{v}})\right]-\left[\lopdt^1(\underline{\uvec{w}})-\lopdt^2(\underline{\uvec{w}})\right]=\Delta t \sum_{l=0}^{M}\begin{pmatrix} 
+        \theta^M_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
         \vdots\\
-        \sum_{l=0}^{m} \theta^m_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
+        \theta^m_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
         \vdots\\
-        \sum_{l=0}^{M} \theta^1_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]
+        \theta^1_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]
         \end{pmatrix}.$$
-Remembering that $\theta^m_l$ $m=1,2,\dots,M$ $l=0,1,\dots,M$ are fixed normalized constant coefficients not depending on $\Delta t$ and that $\uvec{G}(t,\uvec{u})$ is Lipschitz-continuous with respect to $\uvec{u}$ uniformly with respect to $t$ with a Lipschitz constant $L$ we have
-$$\norm{\left[\lopdt^1(\underline{\uvec{v}})-\lopdt^2(\underline{\uvec{v}})\right]-\left[\lopdt^1(\underline{\uvec{w}})-\lopdt^2(\underline{\uvec{w}})\right]}_\infty=\Delta t \norm{\begin{pmatrix} 
-        \sum_{l=0}^{M} \theta^M_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
+By applying the triangular inequality and remembering that $\theta^m_l$ $m=1,2,\dots,M$ $l=0,1,\dots,M$ are fixed normalized constant coefficients not depending on $\Delta t$, thus bounded in absolute value by a positive constant $C$, and that $\uvec{G}(t,\uvec{u})$ is Lipschitz-continuous with respect to $\uvec{u}$ uniformly with respect to $t$ with a Lipschitz constant $L$ we have
+$$\norm{\left[\lopdt^1(\underline{\uvec{v}})-\lopdt^2(\underline{\uvec{v}})\right]-\left[\lopdt^1(\underline{\uvec{w}})-\lopdt^2(\underline{\uvec{w}})\right]}_\infty=\Delta t \norm{\sum_{l=0}^{M}\begin{pmatrix} 
+        \theta^M_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
         \vdots\\
-        \sum_{l=0}^{m} \theta^m_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
+        \theta^m_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]\\
         \vdots\\
-        \sum_{l=0}^{M} \theta^1_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]
+        \theta^1_l \left[ \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l) \right]
         \end{pmatrix}}_\infty \leq$$
         $$\leq \Delta t C \sum_{l=0}^{M} \norm{\begin{pmatrix} 
         \uvec{G}(t^l,\uvec{v}^l)-\uvec{G}(t^l,\uvec{w}^l)\\
