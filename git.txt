@@ -1,0 +1,20 @@
+1) Genera la chiave
+ssh-keygen
+
+2) Always type invio e spunta il disegno satanico che è la mia chiave ehm liverpool
+
+3) If I want to see my key I go to home then
+cd .ssh/
+cat id_rsa (this you don't touch)
+cat id_rsa.pub (this you copy and go to git.hub)
+
+4) git.hub->settings->SSH and GPG keys->add new key-> copy the key cat id_rsa.pub -> you receive an email
+
+5) Go to the repository on github -> Take the ssh url of the repository -> go to the folder where you want to have your local repository
+
+git clone -b (nomedelbranchdacopiare) url
+
+
+
+
+
